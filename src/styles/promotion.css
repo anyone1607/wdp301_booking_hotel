@@ -1,0 +1,57 @@
+/* src/components/Promotion.css */
+.promotion-container {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .promotion-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: stretch; /* Thêm dòng này để đảm bảo các phần tử con có cùng chiều cao */
+  }
+  
+  .promotion-item {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin: 10px;
+    padding: 20px;
+    width: 300px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+    display: flex;
+    flex-direction: column; /* Đảm bảo các phần tử con bên trong sắp xếp theo chiều dọc */
+    justify-content: space-between; /* Đảm bảo các phần tử con có khoảng cách đều */
+  }
+  
+  .promotion-item:hover {
+    transform: scale(1.05);
+  }
+  
+  .promotion-image {
+    max-width: 100%;
+    border-radius: 10px;
+  }
+  
+  h2 {
+    margin: 10px 0;
+  }
+  
+  p {
+    color: #555;
+  }
+  
+  .coupon-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+  }
+  
+  .coupon-button:hover {
+    background-color: #0056b3;
+  }

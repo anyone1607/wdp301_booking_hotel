@@ -1,0 +1,30 @@
+
+
+  p {   
+    line-height: 1.6;
+    font-size: 18px;
+  }
+  h3 {
+    font-size: 30px;
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom: 0px;
+    font-family: 'Font Name', comfortaa;
+  }
+
+  .link-list {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .link-list a {
+    text-decoration: none;
+    color: #000;
+    margin: 0 10px; /* Khoảng cách giữa các liên kết */
+  }
+  
+  .link-list a:hover {
+    color: #f00;
+  }
+

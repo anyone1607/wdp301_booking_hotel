@@ -1,0 +1,10 @@
+.title{
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-size: 2rem;
+    font-weight: bold;
+}
+#formDesc{
+    height: 150px;    
+}

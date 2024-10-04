@@ -48,6 +48,8 @@ const UserModal = ({
             >
               <option value="user">User</option>
               <option value="admin">Admin</option>
+              <option value="manager">Manager</option>{" "}
+              {/* Sửa giá trị "manager" */}
             </Form.Control>
           </Form.Group>
           <Button variant="primary" type="submit" className="mt-3">

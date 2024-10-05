@@ -55,7 +55,7 @@ const Login = () => {
 
             // Điều hướng dựa trên vai trò của người dùng
             if (result.data.role === 'admin') {
-                navigate('/admin/dashboard'); // Điều hướng admin đến trang dashboard
+                navigate('/dashboard'); // Điều hướng admin đến trang dashboard
             } else {
                 navigate('/'); // Điều hướng user bình thường đến trang home
             }

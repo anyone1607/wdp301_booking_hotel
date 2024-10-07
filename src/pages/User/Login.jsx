@@ -54,9 +54,12 @@ const Login = () => {
             });
 
             // Điều hướng dựa trên vai trò của người dùng
-            if (result.data.role === 'admin') {
-                navigate('/dashboard'); // Điều hướng admin đến trang dashboard
-            } else {
+            if (result.data.role === 'admin' ) {
+                navigate('/dashboard'); // Điều hướng admin và manager đến trang dashboard
+            }else if(result.data.role === 'manager'){
+                navigate('/booking-management'); 
+            }
+             else {
                 navigate('/'); // Điều hướng user bình thường đến trang home
             }
         } catch (err) {

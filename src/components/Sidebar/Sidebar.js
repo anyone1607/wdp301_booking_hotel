@@ -24,18 +24,20 @@ function SideBar() {
       </div>
       <div className="sidebar-wrapper ps">
         <ul className="nav">
-          {/* Hiển thị Dashboard cho cả admin và manager */}
-          <li className={`${pathname === "/dashboard" ? "active" : ""}`}>
-            <Link
-              className={`nav-link ${pathname === "/dashboard" ? "active" : ""}`}
-              to="/dashboard"
-              aria-current="page"
-              style={{ display: "flex", alignItems: "flex-end" }}
-            >
-              <CiBank style={{ fontSize: "24px" }} /> &ensp;
-              <p style={{ fontSize: "14px" }}>Dashboard</p>
-            </Link>
-          </li>
+          {/* Hiển thị Dashboard chỉ cho admin */}
+          {userRole === "admin" && (
+            <li className={`${pathname === "/dashboard" ? "active" : ""}`}>
+              <Link
+                className={`nav-link ${pathname === "/dashboard" ? "active" : ""}`}
+                to="/dashboard"
+                aria-current="page"
+                style={{ display: "flex", alignItems: "flex-end" }}
+              >
+                <CiBank style={{ fontSize: "24px" }} /> &ensp;
+                <p style={{ fontSize: "14px" }}>Dashboard</p>
+              </Link>
+            </li>
+          )}
 
           {/* Hiển thị các mục cho admin */}
           {userRole === "admin" && (

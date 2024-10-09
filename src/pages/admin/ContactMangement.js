@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Table, Modal, Form } from 'react-bootstrap';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify'; // Import ToastContainer and toast
+import 'react-toastify/dist/ReactToastify.css'; // Import CSS for react-toastify
 import '../../styles/ContactManagement.css';
 
 function ContactManagement() {
@@ -23,8 +25,8 @@ function ContactManagement() {
         .catch(error => console.error(error));
     }, []);
 
-    const handleReplyContact = id => {
-        setSelectedContact(id);
+    const handleReplyContact = contact => {
+        setSelectedContact(contact);
         setShowReplyModal(true);
     };
 
@@ -41,8 +43,12 @@ function ContactManagement() {
         .then(() => {
             setShowReplyModal(false);
             setReplyMessage('');
+            toast.success('Send Reply Thành Công'); // Thông báo thành công
         })
-        .catch(error => console.error(error));
+        .catch(error => {
+            console.error(error);
+            toast.error('Gửi phản hồi thất bại'); // Thông báo lỗi
+        });
     };
 
     const handleShowModal = contact => {
@@ -61,6 +67,7 @@ function ContactManagement() {
 
     return (
         <div className="contacts-container p-6 bg-gray-100">
+            <ToastContainer /> {/* Thêm ToastContainer vào đây */}
             <h2 className="text-2xl font-bold mb-4">Contact Management</h2>
             <Table striped bordered hover>
                 <thead className="bg-gray-200">
@@ -78,7 +85,7 @@ function ContactManagement() {
                             <td onClick={() => handleShowModal(contact)}>{contact.email}</td>
                             <td onClick={() => handleShowModal(contact)}>{contact.message}</td>
                             <td>
-                                <Button variant="secondary" onClick={() => handleReplyContact(contact._id)}>Reply</Button>
+                                <Button variant="secondary" onClick={() => handleReplyContact(contact)}>Reply</Button>
                             </td>
                         </tr>
                     ))}

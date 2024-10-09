@@ -78,7 +78,7 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<DashboardPage />}
-                allowedRoles={["admin", "manager"]}
+                allowedRoles={["admin"]}
               />
             }
           />

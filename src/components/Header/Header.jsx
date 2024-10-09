@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useContext } from "react";
-import { Container, Row, Button, Image, Col } from "react-bootstrap";
+import { Container, Row, Button, Image } from "react-bootstrap";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import Logo from "../../assets/images/logo.png";
 import "./header.css";
 import { AuthContext } from "../../context/AuthContext";
+import { FaUserCircle } from "react-icons/fa"; // Import icon profile
 
 const nav__links = [
   { path: "/home", display: "Home" },
@@ -78,19 +79,19 @@ const Header = () => {
             </div>
 
             {/* NAVIGATION RIGHT */}
-            <div className="nav__right d-flex align-items-center gap-5">
+            <div className="nav__right d-flex align-items-center gap-4">
               <div className="nav__btns d-flex align-items-center gap-2">
                 {user ? (
-                  <Image
-                    id="profile-avatar"
-                    src={user.avatar} // Sửa lỗi tại đây
-                    alt="Profile Avatar"
+                  <FaUserCircle
+                    id="profile-icon"
+                    size={40} // Kích thước của icon
                     style={{
-                      width: "60px",
-                      height: "60px",
-                      borderRadius: "50%",
+                      cursor: "pointer",
+                      transition: "color 0.3s",
                     }}
                     onClick={() => navigate("/profile")}
+                    onMouseEnter={(e) => (e.target.style.color = "#0056b3")} // Thay đổi màu khi hover
+                    onMouseLeave={(e) => (e.target.style.color = "#007bff")}
                   />
                 ) : (
                   <>

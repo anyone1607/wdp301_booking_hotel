@@ -37,7 +37,7 @@ const TourDetails = () => {
                icon: 'error',
                title: 'Bạn phải đăng nhập để đánh giá',
                showConfirmButton: true,
-               confirmButtonText : 'Đăng nhập',
+               confirmButtonText: 'Đăng nhập',
                confirmButtonColor: '#3085d6',
                timer: 1500
             })
@@ -68,7 +68,7 @@ const TourDetails = () => {
             icon: 'success',
             title: 'Đánh giá thành công',
             showConfirmButton: true,
-            confirmButtonText : 'OK',
+            confirmButtonText: 'OK',
             confirmButtonColor: '#3085d6',
             timer: 1500
          })
@@ -111,7 +111,7 @@ const TourDetails = () => {
             {
                !loading && !error && tour &&
                <Row>
-                  <Col lg='8'>
+                  <Col lg='6'>
                      <div className="tour__content">
                         <img src={photo} alt="" />
 
@@ -190,7 +190,7 @@ const TourDetails = () => {
                      </div>
                   </Col>
 
-                  <Col lg='4'>
+                  <Col lg='6'>
                      <Booking tour={tour} avgRating={avgRating} />
                   </Col>
                </Row>

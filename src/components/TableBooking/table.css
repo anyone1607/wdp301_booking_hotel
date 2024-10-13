@@ -1,0 +1,46 @@
+.three-way-toggle {
+    display: inline-block;
+    width: 100px;
+    height: 30px;
+    position: relative;
+    background-color: #e0e0e0;
+    border-radius: 15px;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  
+  .toggle-switch {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 300%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .toggle-label {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    line-height: 30px;
+    color: #fff;
+  }
+  
+  .toggle-switch.left {
+    transform: translateX(0);
+    background-color: #ff4d4d; /* Màu đỏ cho trạng thái cancelled */
+  }
+  
+  .toggle-switch.middle {
+    transform: translateX(-33.33%);
+    background-color: #f0ad4e; /* Màu vàng cho trạng thái pending */
+  }
+  
+  .toggle-switch.right {
+    transform: translateX(-66.66%);
+    background-color: #5cb85c; /* Màu xanh cho trạng thái confirmed */
+  }
+  

@@ -42,17 +42,14 @@ const AuthReducer = (state, action) => {
 export const AuthContextProvider = ({ children }) => {
     const [state, dispatch] = useReducer(AuthReducer, initial_state);
 
-    // // Cập nhật dữ liệu user vào localStorage khi user thay đổi
-    // useEffect(() => {
-    //     if (state.user) {
-    //         localStorage.setItem("user", JSON.stringify(state.user));
-    //     } else {
-    //         localStorage.removeItem("user");
-    //     }
-    // }, [state.user]);
+    // Cập nhật dữ liệu user vào localStorage khi user thay đổi
     useEffect(() => {
-        localStorage.setItem("user", JSON.stringify(state.user))
-    }, [state.user])
+        if (state.user) {
+            localStorage.setItem("user", JSON.stringify(state.user));
+        } else {
+            localStorage.removeItem("user");
+        }
+    }, [state.user]);
 
     return (
         <AuthContext.Provider value={{

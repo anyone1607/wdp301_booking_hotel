@@ -133,7 +133,7 @@ function TourManagement() {
                                 />
                             </td>
                             <td>
-                                <Link to={`/admin/update-tour/${tour._id}`}>
+                                <Link to={`/update-tour/${tour._id}`}>
                                     <Button variant="warning">Update</Button>
                                 </Link>
                             </td>
@@ -144,7 +144,7 @@ function TourManagement() {
                     ))}
                 </tbody>
             </Table>
-            <Link to="/admin/create-tour">
+            <Link to="/create-tour">
                 <Button variant="primary" className="mb-3">Create Tour</Button>
             </Link>
 

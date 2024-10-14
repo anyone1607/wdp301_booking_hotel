@@ -1,120 +1,164 @@
+/* Màu sắc cho tiêu đề */
+h2, h4 {
+  color: #2980b9; /* Màu xanh dương sáng cho tiêu đề */
+  font-weight: 500;
+}
 
-  h2, h4 {
-    color: var(--heading-color);
-    font-weight: 500;
-  }
-  
-  .form, .profile-details, .password-form {
-    margin-top: 2rem;
-  }
-  
-  .form .form-group,
-  .profile-details p {
-    margin-bottom: 1.5rem;
-  }
-  
-  .form .form-label,
-  .profile-details p strong {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--text-color);
-    font-weight: 500;
-  }
-  
-  .form .form-control,
-  .profile-details p {
-    font-size: 1rem;
-    color: var(--heading-color);
-  }
-  
-  .form .form-control {
-    padding: 0.75rem 1rem;
-    border: 1px solid #ced4da;
-    border-radius: var(--border-radius);
-    transition: border-color 0.3s ease;
-  }
-  
-  .form .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: none;
-  }
-  
-  .profile-details p {
-    font-size: 18px
-  }
-  
-  .profile-details img {
-    display: block;
-    margin: 1rem auto;
-    border-radius: 50%;
-    max-width: 100px;
-  }
-  
-  button {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    border-radius: var(--border-radius);
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  
-  button.me-2 {
-    margin-right: 1rem;
-  }
-  
-  button:hover {
-    background-color: var(--primary-color);
-    color: #fff;
-  }
-  
-  button.secondary {
-    background-color: var(--secondary-color);
-    color: #fff;
-  }
-  
-  button.secondary:hover {
-    background-color: darken(var(--secondary-color), 10%);
-  }
-  
-  .alert {
-    margin-bottom: 1.5rem;
-  }
- #profile-avatar {
-    width: 100%;
-    max-width: 350px;
-    border-radius: 50%;
-    margin: 0 auto;
-    display: block;
-  }
+/* Định dạng cho các phần của form và thông tin hồ sơ */
+.form, .profile-details, .password-form {
+  margin-top: 2rem;
+}
 
-  #profile-btn {
-   background-color:var(--secondary-color);
-   padding: 10px;
-   border-radius: 6px;
-   text-align: center;
-   font-size: 17px;
-   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
-   cursor: pointer;
-  }
-  #profile-btn:hover {
-    background-color: var(--primary-color);
+/* Khoảng cách giữa các trường trong form và thông tin hồ sơ */
+.form .form-group,
+.profile-details p {
+  margin-bottom: 1.5rem;
+}
 
-  }
-  #profile-name {
-    font-weight: 500;
-    font-size: 40px;
-    text-align: center;
-  }
-  #save{
-    background-color: #66f !important;
-    padding : 10px 20px;
-    margin: 0px 10px;
-    font-size: 18px;
-    border: none;
-  }
-  #cancel{
-    background-color: #999 !important;
-    padding : 10px 20px;
-    margin: 0px 10px;
-    font-size: 18px;
-    border: none;
-  }
+/* Định dạng nhãn và các thông tin quan trọng */
+.form .form-label,
+.profile-details p strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #2c3e50; /* Màu xám đậm cho nhãn */
+  font-weight: 500;
+}
+
+/* Định dạng cho các trường nhập liệu */
+.form .form-control,
+.profile-details p {
+  font-size: 1rem;
+  color: #2c3e50; /* Màu xanh đậm cho văn bản */
+}
+
+/* Định dạng cho các trường nhập liệu */
+.form .form-control {
+  padding: 0.75rem 1rem;
+  border: 1px solid #ecf0f1; /* Màu viền nhạt */
+  border-radius: 4px; /* Sử dụng biến border-radius */
+  transition: border-color 0.3s ease;
+}
+
+/* Định dạng cho trường nhập liệu khi focus */
+.form .form-control:focus {
+  border-color: #e74c3c; /* Màu đỏ khi focus */
+  box-shadow: 0 0 5px rgba(231, 76, 60, 0.5); /* Đổ bóng cho viền */
+}
+
+/* Định dạng cho văn bản thông tin */
+.profile-details p {
+  font-size: 18px;
+}
+
+/* Định dạng cho ảnh đại diện */
+.profile-details img {
+  display: block;
+  margin: 1rem auto;
+  border-radius: 50%;
+  max-width: 100px;
+  border: 2px solid #e74c3c; /* Đường viền cho ảnh đại diện */
+}
+
+/* Định dạng cho nút */
+button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 4px; /* Sử dụng biến border-radius */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Định dạng cho các nút khác nhau */
+button.me-2 {
+  margin-right: 1rem;
+}
+
+button:hover {
+  background-color: #e67e22; /* Màu cam khi hover */
+  color: #fff; /* Màu chữ trắng khi hover */
+}
+
+button.secondary {
+  background-color: #9b59b6; /* Màu tím cho nút phụ */
+  color: #fff;
+}
+
+button.secondary:hover {
+  background-color: #8e44ad; /* Màu tím đậm khi hover */
+}
+
+/* Định dạng cho thông báo */
+.alert {
+  margin-bottom: 1.5rem;
+  border-radius: 4px; /* Bo góc cho thông báo */
+}
+
+/* Định dạng cho ảnh đại diện */
+#profile-avatar {
+  width: 150px; /* Chiều rộng cố định */
+  height: 150px; /* Chiều cao cố định */
+  border-radius: 50%; /* Bo tròn hình ảnh */
+  margin: 0 auto; /* Canh giữa */
+  display: block; /* Hiển thị như một block */
+  object-fit: cover; /* Đảm bảo hình ảnh không bị méo */
+}
+
+/* Định dạng cho nút profile */
+#profile-btn {
+  background-color: #e74c3c; /* Màu đỏ cho nút profile */
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 17px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+  cursor: pointer;
+}
+
+#profile-btn:hover {
+  background-color: #c0392b; /* Màu đỏ đậm khi hover */
+}
+
+/* Định dạng cho tên hồ sơ */
+#profile-name {
+  font-weight: 500;
+  font-size: 40px;
+  text-align: center;
+  color: #8e44ad; /* Màu tím cho tên */
+}
+
+/* Định dạng cho nút lưu và hủy */
+#save {
+  background-color: #27ae60 !important; /* Màu xanh lá cho nút lưu */
+  padding: 10px 20px;
+  margin: 0px 10px;
+  font-size: 18px;
+  border: none;
+  border-radius: 4px; /* Bo góc cho nút */
+}
+
+#cancel {
+  background-color: #e67e22 !important; /* Màu cam cho nút hủy */
+  padding: 10px 20px;
+  margin: 0px 10px;
+  font-size: 18px;
+  border: none;
+  border-radius: 4px; /* Bo góc cho nút */
+}
+
+/* Định dạng cho container hồ sơ */
+.profile-container {
+  margin-top: 20px;
+}
+
+/* Định dạng cho card hồ sơ */
+.profile-card {
+  margin-bottom: 20px;
+  border: 1px solid #e74c3c; /* Đường viền cho card */
+  border-radius: 8px; /* Bo góc cho card */
+  overflow: hidden; /* Đảm bảo nội dung không ra ngoài */
+}
+
+/* Định dạng cho card thông tin hồ sơ */
+.profile-info-card {
+  padding: 20px;
+  background-color: #f9f9f9; /* Màu nền nhạt cho card */
+}

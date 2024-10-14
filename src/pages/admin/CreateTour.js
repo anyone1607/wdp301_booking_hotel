@@ -53,7 +53,7 @@ function CreateTour() {
             })
             
             
-            navigate('/admin/tour-management');
+            navigate('/tour-management');
         } catch (error) {
             console.error("Error creating tour:", error);
         }

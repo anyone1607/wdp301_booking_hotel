@@ -77,7 +77,7 @@ function UpdateTour() {
                 const addItineraryResult = await addItinerary.json();
                 console.log(addItineraryResult);
             })
-            navigate('/admin/tour-management');
+            navigate('/tour-management');
         } catch (error) {
             console.error("Error updating tour:", error);
         }

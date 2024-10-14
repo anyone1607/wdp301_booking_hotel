@@ -27,24 +27,28 @@ import ProtectedRoute from "./ProtectedRoute";
 import { AuthContext } from "../context/AuthContext";
 import AdminLayout from "../components/Layout/AdminLayout";
 import Header from "../components/Header/Header";
-import Footer from "../components/Footer/Footer";
+// import Footer from "../components/Footer/Footer";
 import ErrorPage from "../pages/ErrorPage"; // Nhập trang ErrorPage
-
+import Location from "../pages/User/Location"; // import Location
+import LocationManagement from "../pages/admin/LocationManagement";
+import TourList from "../components/TourList/TourList";
 const Routers = () => {
   const { user } = useContext(AuthContext);
-  const isAdminOrManager = user && (user.role === "admin" || user.role === "manager"); // Kiểm tra người dùng là admin hoặc manager
+  const isAdminOrManager =
+    user && (user.role === "admin" || user.role === "manager"); // Kiểm tra người dùng là admin hoặc manager
 
   // Sử dụng useLocation để lấy đường dẫn hiện tại
   const location = useLocation();
 
   // Kiểm tra xem đường dẫn có bắt đầu bằng '/dashboard' hoặc các route quản lý không
-  const hideHeaderFooter = location.pathname.startsWith("/dashboard") ||
-                           location.pathname.startsWith("/user-management") ||
-                           location.pathname.startsWith("/tour-management") ||
-                           location.pathname.startsWith("/booking-management") ||
-                           location.pathname.startsWith("/create-tour") ||
-                           location.pathname.startsWith("/update-tour") ||
-                           location.pathname.startsWith("/contact-management");
+  const hideHeaderFooter =
+    location.pathname.startsWith("/dashboard") ||
+    location.pathname.startsWith("/user-management") ||
+    location.pathname.startsWith("/tour-management") ||
+    location.pathname.startsWith("/booking-management") ||
+    location.pathname.startsWith("/create-tour") ||
+    location.pathname.startsWith("/update-tour") ||
+    location.pathname.startsWith("/contact-management");
 
   return (
     <>
@@ -70,6 +74,11 @@ const Routers = () => {
         <Route path="/deals" element={<Promotion />} />
         <Route path="/success" element={<PaymentSuccess />} />
         <Route path="/cancel" element={<PaymentCancel />} />
+
+        {/* Location router */}
+        
+        <Route path="/location" element={<Location />}></Route>
+        <Route path="/tours/city/:city" element={<TourList />} />
 
         {/* Admin & Manager Routes */}
         <Route element={<AdminLayout />}>
@@ -136,13 +145,23 @@ const Routers = () => {
               />
             }
           />
+
+          <Route
+            path="/location-management"
+            element={
+              <ProtectedRoute
+                element={<LocationManagement />}
+                // allowedRoles={["admin"]}
+              />
+            }
+          />
         </Route>
 
         {/* Route cho trang lỗi */}
         <Route path="/error" element={<ErrorPage />} />
         <Route path="*" element={<Navigate to="/error" />} />
       </Routes>
-      {!hideHeaderFooter && <Footer />}
+      {/* {!hideHeaderFooter && <Footer />} */}
     </>
   );
 };

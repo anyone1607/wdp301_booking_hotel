@@ -148,3 +148,15 @@
    color: var(--text-color);
    margin-bottom: 0.5rem;
 }
+
+
+.extra-service-item {
+   display: flex;
+   align-items: center;
+   gap: 8px; /* Spacing between checkbox and label */
+   margin-bottom: 10px; /* Space between rows */
+}
+
+.extra-service-item input[type="checkbox"] {
+   margin-right: 5px; /* Space between checkbox and label */
+}

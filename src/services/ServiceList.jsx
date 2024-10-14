@@ -1,38 +1,38 @@
-import React from 'react'
-import ServiceCard from './ServiceCard'
-import { Col } from 'reactstrap'
-import weatherImg from '../assets/images/weather.png'
-import guideImg from '../assets/images/guide.png'
-import customizationImg from '../assets/images/customization.png'
+import React from 'react';
+import ServiceCard from './ServiceCard';
+import { Col } from 'reactstrap';
+import weatherImg from '../assets/images/weather.png'; // Hình ảnh thời tiết
+import guideImg from '../assets/images/guide.png'; // Hình ảnh hướng dẫn viên
+import customizationImg from '../assets/images/customization.png'; // Hình ảnh tùy chỉnh
 
 const servicesData = [
    {
       imgUrl: weatherImg,
-      title: `Calculate Weather`,
-      desc: `Stay ahead of the forecast with our cutting-edge weather calculations. From sunny skies to stormy conditions, our accurate predictions ensure you're always prepared for your next adventure. Say goodbye to unexpected weather surprises and hello to worry-free travels.`,
+      title: 'Room Comfort',
+      desc: 'Experience the ultimate comfort in our hotel rooms. With premium amenities and cozy designs, your stay will be a relaxing escape from the everyday hustle and bustle.',
    },
    {
       imgUrl: guideImg,
-      title: `Best Tour Guide`,
-      desc: `Explore with confidence alongside our seasoned tour guides. With a wealth of knowledge and a passion, our guides transform every destination into an unforgettable experience. Discover hidden treasures and iconic landmarks, ensuring each moment is unforgettable.`,
+      title: 'Hotel Recommendations',
+      desc: 'Discover the best hotels for your needs. Whether you are looking for luxury, budget-friendly options, or unique stays, our curated list of hotels ensures you find the perfect accommodation for your trip.',
    },
    {
       imgUrl: customizationImg,
-      title: 'Customization',
-      desc: `Craft your ideal adventure with our tailored experiences. Whether seeking thrills or tranquility, our customizable packages cater to your preferences. From curated itineraries to handpicked accommodations, create memories that reflect your unique travel style.`,
+      title: 'Customized Booking',
+      desc: 'Tailor your hotel booking experience to suit your preferences. From choosing room types to adding special requests, our platform allows you to create a stay that matches your unique needs and desires.',
    },
-]
+];
 
 const ServiceList = () => {
-   return <>
-      {
-         servicesData.map((item, index) => (
+   return (
+      <>
+         {servicesData.map((item, index) => (
             <Col lg='3' md='6' sm='12' className='mb-4' key={index}>
                <ServiceCard item={item} />
-            </Col>))
-      }
-   </>
+            </Col>
+         ))}
+      </>
+   );
+};
 
-}
-
-export default ServiceList
+export default ServiceList;

@@ -23,6 +23,7 @@ function BookingManagement() {
         extraBed: 0,
         roomQuantity: 0,
         restaurant: "",
+        amount: 0, // Thêm trường amount
     });
     const [editingBooking, setEditingBooking] = useState(null);
 
@@ -33,46 +34,32 @@ function BookingManagement() {
         try {
             const url = editingBooking
                 ? `http://localhost:8000/api/v1/payment/${editingBooking._id}`
-                : "http://localhost:8000/api/v1/booking";
-            const method = editingBooking ? "PUT" : "POST";
+                : "http://localhost:8000/api/v1/payment"; // Cập nhật URL
 
-            const response = await fetch(url, {
-                method,
+            const response = await axios.post(url, {
+                bookingId: editingBooking ? editingBooking._id : null, // Nếu có đang chỉnh sửa, gửi bookingId
+                amount: formData.amount, // Gửi amount
+                ...formData, // Gửi các thông tin khác
+            }, {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(formData),
             });
 
-            const result = await response.json();
-
+            // Cập nhật bookings sau khi thanh toán thành công
             if (editingBooking) {
                 setBookings(
                     bookings.map((booking) =>
-                        booking._id === editingBooking._id ? result.data : booking
+                        booking._id === editingBooking._id ? response.data.payment : booking
                     )
                 );
             } else {
-                setBookings([...bookings, result.data]);
+                setBookings([...bookings, response.data.payment]);
             }
 
-            setFormData({
-                userId: "",
-                userEmail: "",
-                tourName: "",
-                fullName: "",
-                adult: 0,
-                children: 0,
-                baby: 0,
-                guestSize: 0,
-                phone: "",
-                bookAt: "",
-                hotel: "",
-                extraBed: 0,
-                roomQuantity: 0,
-                restaurant: "",
-            });
+            // Reset form
+            resetFormData();
             setEditingBooking(null);
             setShowModal(false);
         } catch (error) {
@@ -80,12 +67,10 @@ function BookingManagement() {
         }
     };
 
-
     const handleDelete = async (id) => {
         const token = localStorage.getItem("accessToken");
         try {
-            await fetch(`http://localhost:8000/api/v1/booking/${id}`, {
-                method: "DELETE",
+            await axios.delete(`http://localhost:8000/api/v1/booking/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -101,17 +86,36 @@ function BookingManagement() {
         setFormData({ ...formData, [name]: value });
     };
 
+    const resetFormData = () => {
+        setFormData({
+            userId: "",
+            userEmail: "",
+            tourName: "",
+            fullName: "",
+            adult: 0,
+            children: 0,
+            baby: 0,
+            guestSize: 0,
+            phone: "",
+            bookAt: "",
+            hotel: "",
+            extraBed: 0,
+            roomQuantity: 0,
+            restaurant: "",
+            amount: 0, // Reset amount
+        });
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             const token = localStorage.getItem("accessToken");
             try {
-                const response = await fetch("http://localhost:8000/api/v1/booking", {
+                const response = await axios.get("http://localhost:8000/api/v1/booking", {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                const data = await response.json();
-                setBookings(data.data);
+                setBookings(response.data.data);
                 setLoading(false);
             } catch (error) {
                 console.error("Error fetching bookings:", error);
@@ -125,28 +129,20 @@ function BookingManagement() {
     if (loading) {
         return <div>Loading...</div>;
     }
+
     return (
         <div className="tours-container">
             <h2>Bookings Management</h2>
             <TableBooking
                 data={bookings}
-          
                 handleDelete={handleDelete}
             />
+            <Button onClick={() => setShowModal(true)}>Add Booking</Button>
             <BookingModal
                 show={showModal}
                 handleClose={() => {
                     setShowModal(false);
-                    setEditingBooking(null);
-                    setFormData({
-                        userId: "",
-                        userEmail: "",
-                        tourName: "",
-                        fullName: "",
-                        guestSize: 0,
-                        phone: "",
-                        bookAt: "",
-                    });
+                    resetFormData();
                 }}
                 handleSubmit={handleSubmit}
                 formData={formData}

@@ -1,3 +1,4 @@
+// src/pages/MyBookings.js
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { Container, Row, Col, Card, Button, Modal } from "react-bootstrap";
@@ -26,12 +27,8 @@ const MyBookings = () => {
             }
 
             try {
-                const bookingsResponse = await axios.get(`${BASE_URL}/booking/user/${userId}`, {
-                    withCredentials: true,
-                });
-                const toursResponse = await axios.get(`${BASE_URL}/tours`, {
-                    withCredentials: true,
-                });
+                const bookingsResponse = await axios.get(`${BASE_URL}/booking/user/${userId}`, { withCredentials: true });
+                const toursResponse = await axios.get(`${BASE_URL}/tours`, { withCredentials: true });
                 setBookings(bookingsResponse.data.data);
                 setTours(toursResponse.data.data);
             } catch (error) {
@@ -51,9 +48,7 @@ const MyBookings = () => {
 
     const handleCancelBooking = async (bookingId) => {
         try {
-            const response = await axios.put(`${BASE_URL}/booking/cancel/${bookingId}`, null, {
-                withCredentials: true,
-            });
+            const response = await axios.put(`${BASE_URL}/booking/cancel/${bookingId}`, null, { withCredentials: true });
 
             if (response.status === 200) {
                 const updatedBookings = bookings.map((booking) =>
@@ -77,18 +72,14 @@ const MyBookings = () => {
     };
 
     const handleShowDetails = async (booking) => {
-        const hotelId = booking.hotelId; // Assuming booking contains hotel and restaurant IDs
+        const hotelId = booking.hotelId; 
         const restaurantId = booking.restaurantId;
 
         try {
-            const responseHotel = await axios.get(`${BASE_URL}/hotels/${hotelId}`, {
-                withCredentials: true,
-            });
+            const responseHotel = await axios.get(`${BASE_URL}/hotels/${hotelId}`, { withCredentials: true });
             setHotel(responseHotel.data);
 
-            const responseRestaurant = await axios.get(`${BASE_URL}/restaurants/${restaurantId}`, {
-                withCredentials: true,
-            });
+            const responseRestaurant = await axios.get(`${BASE_URL}/restaurants/${restaurantId}`, { withCredentials: true });
             setRestaurant(responseRestaurant.data);
         } catch (error) {
             console.error("Error fetching hotel or restaurant data:", error);
@@ -109,130 +100,121 @@ const MyBookings = () => {
                 `${BASE_URL}/payment/create-payment-link`,
                 {
                     amount: booking.price,
-                    bookingId: booking._id, // Pass booking ID to link it with payment
+                    bookingId: booking._id,
                 },
                 { withCredentials: true }
             );
 
             if (response.status === 200) {
                 const { checkoutUrl } = response.data;
+                Swal.fire({
+                    icon: "info",
+                    title: "Redirecting to Payment",
+                    text: "You will be redirected to the payment page.",
+                    showConfirmButton: false,
+                    timer: 2000,
+                });
                 window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
             } else {
                 console.error("Failed to create payment link");
             }
         } catch (error) {
             console.error("Error creating payment link:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Payment Link Error",
+                text: "There was an error creating the payment link. Please try again.",
+            });
         }
     };
 
     return (
         <>
-        <CommonSection title="My Bookings" />
-        <Container>
-            <br/>
-            <br/>
-            {bookingsWithTourInfo.length === 0 ? (
-                <p>You don't have any booked tours yet.</p>
-            ) : (
-                <Row>
-                    {bookingsWithTourInfo.map((booking) => (
-                        <Col lg="4" md="6" sm="6" className="mb-4" key={booking._id}>
-                            <Card>
-                                <Card.Body>
-                                    <Card.Title>
-                                        {booking.tourName || "Tour not found"}
-                                    </Card.Title>
-                                    {booking.tourInfo ? (
-                                        <TourCardBooking tour={booking.tourInfo} />
-                                    ) : (
-                                        <p>Tour information not available</p>
-                                    )}
-                                    <Card.Text>
-                                        <strong>Date:</strong> {format(new Date(booking.bookAt), "dd-MM-yyyy")}
-                                        <br />
-                                        <strong>Status:</strong> <span className={
-                                            booking.status === 'pending' ? 'status-pending' :
-                                                booking.status === 'confirmed' ? 'status-confirmed' :
-                                                    booking.status === 'cancelled' ? 'status-cancelled' : ''
-                                        }>{booking.status}</span>
-                                    </Card.Text>
+            <CommonSection title="My Bookings" />
+            <Container>
+                <br />
+                <br />
+                {bookingsWithTourInfo.length === 0 ? (
+                    <p>You don't have any booked tours yet.</p>
+                ) : (
+                    <Row>
+                        {bookingsWithTourInfo.map((booking) => (
+                            <Col lg="4" md="6" sm="6" className="mb-4" key={booking._id}>
+                                <Card>
+                                    <Card.Body>
+                                        <Card.Title>{booking.tourName || "Tour not found"}</Card.Title>
+                                        {booking.tourInfo ? (
+                                            <TourCardBooking tour={booking.tourInfo} />
+                                        ) : (
+                                            <p>Tour information not available</p>
+                                        )}
+                                        <Card.Text>
+                                            <strong>Date:</strong> {format(new Date(booking.bookAt), "dd-MM-yyyy")}
+                                            <br />
+                                            <strong>Status:</strong> <span className={
+                                                booking.status === 'pending' ? 'status-pending' :
+                                                    booking.status === 'confirmed' ? 'status-confirmed' :
+                                                        booking.status === 'cancelled' ? 'status-cancelled' : ''
+                                            }>{booking.status}</span>
+                                        </Card.Text>
 
-                                    <Button variant="primary" onClick={() => handleShowDetails(booking)}>
-                                        Details
-                                    </Button>
-                                    {booking.status === "pending" && (
-                                        <>
-                                            <Button className="mx-2"
-                                                variant="danger"
-                                                onClick={() => handleCancelBooking(booking._id)}
-                                            >
-                                                Cancel Booking
-                                            </Button>
-
-                                            <Button
-                                                variant="success"
-                                                onClick={() => handlePayment(booking)}
-                                            >
-                                                Pay Now
-                                            </Button>
-                                        </>
-                                    )}
-                                    {booking.status === "confirmed" && (
-                                        <Button variant="info" disabled>
-                                            Payment Completed
+                                        <Button variant="primary" onClick={() => handleShowDetails(booking)}>
+                                            Details
                                         </Button>
-                                    )}
-                                    {booking.status === "cancelled" && (
-                                        <Button variant="secondary" disabled>
-                                            Booking Cancelled
-                                        </Button>
-                                    )}
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    ))}
-                </Row>
-            )}
+                                        {booking.status === "pending" && (
+                                            <>
+                                                <Button className="mx-2" variant="danger" onClick={() => handleCancelBooking(booking._id)}>
+                                                    Cancel Booking
+                                                </Button>
 
-            <Modal show={showModal} onHide={handleCloseModal}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Booking Details</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {selectedBooking && (
-                        <>
-                            <p><strong>Tour Name:</strong> {selectedBooking.tourName}</p>
-                            <p><strong>Book Date:</strong> {format(new Date(selectedBooking.bookAt), "dd-MM-yyyy")}</p>
-                            <p><strong>Full Name:</strong> {selectedBooking.fullName}</p>
-                            <p><strong>Email:</strong> {selectedBooking.userEmail}</p>
-                            <p><strong>Group Size:</strong> {selectedBooking.adult}-adult || {selectedBooking.children}-children || {selectedBooking.baby}-baby</p>
-                            <p><strong>Phone:</strong> {selectedBooking.phone}</p>
-                            <p><strong>Hotel:</strong> {hotel ? hotel.name : "Not available"}</p>
-                            <p><strong>Restaurant:</strong> {restaurant ? restaurant.name : "Not available"}</p>
-                            <p><strong>Room:</strong> {selectedBooking.roomQuantity} + {selectedBooking.extraBed}(extraBed)</p>
-                            <p><strong>Status:</strong> <span className={
-                                selectedBooking.status === 'pending' ? 'status-pending' :
-                                    selectedBooking.status === 'confirmed' ? 'status-confirmed' :
-                                        selectedBooking.status === 'cancelled' ? 'status-cancelled' : ''
-                            }>{selectedBooking.status}</span></p>
-                            <p><strong>Total:</strong> ${selectedBooking.price}</p>
+                                                <Button variant="success" onClick={() => handlePayment(booking)}>
+                                                    Pay Now
+                                                </Button>
+                                            </>
+                                        )}
+                                        {booking.status === "confirmed" && (
+                                            <Button variant="info" disabled>
+                                                Payment Completed
+                                            </Button>
+                                        )}
+                                        {booking.status === "cancelled" && (
+                                            <Button variant="secondary" disabled>
+                                                Booking Cancelled
+                                            </Button>
+                                        )}
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        ))}
+                    </Row>
+                )}
 
-                            {selectedBooking.tourInfo && (
-                                <>
-                                    <h5>Tour Information</h5>
-                                    <TourCardBooking tour={selectedBooking.tourInfo} />
-                                </>
-                            )}
-                        </>
-                    )}
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseModal}>
-                        Close
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        </Container>
+                <Modal show={showModal} onHide={handleCloseModal}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Booking Details</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        {selectedBooking && (
+                            <>
+                                <p><strong>Tour Name:</strong> {selectedBooking.tourName}</p>
+                                <p><strong>Book Date:</strong> {format(new Date(selectedBooking.bookAt), "dd-MM-yyyy")}</p>
+                                <p><strong>Full Name:</strong> {selectedBooking.fullName}</p>
+                                <p><strong>Email:</strong> {selectedBooking.userEmail}</p>
+                                <p><strong>Group Size:</strong> {selectedBooking.adult}-adult || {selectedBooking.children}-children || {selectedBooking.baby}-baby</p>
+                                <p><strong>Phone:</strong> {selectedBooking.phone}</p>
+                                <p><strong>Hotel:</strong> {hotel ? hotel.name : "Not available"}</p>
+                                <p><strong>Restaurant:</strong> {restaurant ? restaurant.name : "Not available"}</p>
+                                <p><strong>Price:</strong> {selectedBooking.price} VND</p>
+                            </>
+                        )}
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleCloseModal}>
+                            Close
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            </Container>
         </>
     );
 };

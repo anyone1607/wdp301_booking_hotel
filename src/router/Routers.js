@@ -23,6 +23,7 @@ import BookingManagement from "../pages/admin/BookingManagement";
 import CreateTour from "../pages/admin/CreateTour";
 import UpdateTour from "../pages/admin/UpdateTour";
 import ContactManagement from "../pages/admin/ContactMangement";
+import LocationManagement from "../pages/admin/LocationsManagement"; // Import trang quản lý địa điểm
 import ProtectedRoute from "./ProtectedRoute";
 import { AuthContext } from "../context/AuthContext";
 import AdminLayout from "../components/Layout/AdminLayout";
@@ -32,19 +33,22 @@ import ErrorPage from "../pages/ErrorPage"; // Nhập trang ErrorPage
 
 const Routers = () => {
   const { user } = useContext(AuthContext);
-  const isAdminOrManager = user && (user.role === "admin" || user.role === "manager"); // Kiểm tra người dùng là admin hoặc manager
+  const isAdminOrManager =
+    user && (user.role === "admin" || user.role === "manager"); // Kiểm tra người dùng là admin hoặc manager
 
   // Sử dụng useLocation để lấy đường dẫn hiện tại
   const location = useLocation();
 
   // Kiểm tra xem đường dẫn có bắt đầu bằng '/dashboard' hoặc các route quản lý không
-  const hideHeaderFooter = location.pathname.startsWith("/dashboard") ||
-                           location.pathname.startsWith("/user-management") ||
-                           location.pathname.startsWith("/tour-management") ||
-                           location.pathname.startsWith("/booking-management") ||
-                           location.pathname.startsWith("/create-tour") ||
-                           location.pathname.startsWith("/update-tour") ||
-                           location.pathname.startsWith("/contact-management");
+  const hideHeaderFooter =
+    location.pathname.startsWith("/dashboard") ||
+    location.pathname.startsWith("/user-management") ||
+    location.pathname.startsWith("/tour-management") ||
+    location.pathname.startsWith("/booking-management") ||
+    location.pathname.startsWith("/create-tour") ||
+    location.pathname.startsWith("/update-tour") ||
+    location.pathname.startsWith("/contact-management") ||
+    location.pathname.startsWith("/location-management"); // Kiểm tra cả route của LocationManagement
 
   return (
     <>
@@ -132,6 +136,15 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<ContactManagement />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />
+          <Route
+            path="/location-management"
+            element={
+              <ProtectedRoute
+                element={<LocationManagement />}
                 allowedRoles={["admin"]}
               />
             }

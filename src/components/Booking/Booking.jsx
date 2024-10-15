@@ -47,11 +47,6 @@ const Booking = ({ tour, avgRating }) => {
    useEffect(() => {
       const fetchData = async () => {
          try {
-            const itineraryResponse = await axios.get(`${BASE_URL}/itinerary/tour/${tourId}`, { withCredentials: true });
-            const hotelResponse = await axios.get(`${BASE_URL}/hotels/tour/${tourId}`, { withCredentials: true });
-
-            setItinerary(itineraryResponse.data);
-            setHotels(hotelResponse.data);
          } catch (error) {
             console.error("Error fetching data:", error);
          }

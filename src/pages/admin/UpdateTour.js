@@ -1,83 +1,107 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Button, Row, Col, Card } from 'react-bootstrap';
 import '../../styles/tourStyle.css';
 
 function UpdateTour() {
     const [formData, setFormData] = useState({
         title: '',
-        city: '',
+        location: '',
         address: '',
         distance: '',
-        photo: '',
         desc: '',
-        price: '',
-        maxGroupSize: '',
-        itinerary: [{ day: 1, detail: '' }]
+        price: ''
     });
-    const { id } = useParams();
-    const navigate = useNavigate();
 
+    const [locations, setLocations] = useState([]);
+    const fileInput = useRef(null);
+    const navigate = useNavigate();
+    const { id } = useParams(); // Lấy ID của tour từ URL
+
+    // Fetch locations và tour khi component mount
     useEffect(() => {
-        const token = localStorage.getItem("accessToken");
-        fetch(`http://localhost:8000/api/v1/tours/${id}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then(response => response.json())
-            .then(data => setFormData({
-                ...data.data,
-                itinerary: data.data.itinerary || [{ day: 1, detail: '' }]
-            }))
-            .catch(error => console.error(error));
+        const fetchLocations = async () => {
+            const token = localStorage.getItem("accessToken");
+            try {
+                const response = await fetch("http://localhost:8000/api/v1/locations/getlocation", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                const data = await response.json();
+
+                if (Array.isArray(data)) {
+                    setLocations(data);
+                } else {
+                    console.error("Invalid data format", data);
+                }
+            } catch (error) {
+                console.error("Error fetching locations:", error);
+            }
+        };
+
+        const fetchTour = async () => {
+            const token = localStorage.getItem("accessToken");
+            try {
+                const response = await fetch(`http://localhost:8000/api/v1/tours/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                const data = await response.json();
+                if (data && data.data) {
+                    const tourData = data.data;
+                    setFormData({
+                        title: tourData.title,
+                        location: tourData.location[0], // Giả định là location là mảng
+                        address: tourData.address,
+                        distance: tourData.distance,
+                        desc: tourData.description,
+                        price: tourData.price
+                    });
+                } else {
+                    console.error("Failed to fetch tour data", data);
+                }
+            } catch (error) {
+                console.error("Error fetching tour:", error);
+            }
+        };
+
+        fetchLocations();
+        fetchTour();
     }, [id]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         const token = localStorage.getItem("accessToken");
 
+        const formDataToSend = new FormData();
+        formDataToSend.append("title", formData.title);
+        formDataToSend.append("location", formData.location); // ID của location
+        formDataToSend.append("address", formData.address);
+        formDataToSend.append("distance", formData.distance);
+        formDataToSend.append("desc", formData.desc);
+        formDataToSend.append("price", formData.price);
+        if (fileInput.current.files[0]) {
+            formDataToSend.append("file", fileInput.current.files[0]); // File ảnh nếu có
+        }
+
         try {
             const response = await fetch(`http://localhost:8000/api/v1/tours/${id}`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(formData),
+                body: formDataToSend,
             });
-            
+
             const result = await response.json();
 
-            const res = await fetch(`http://localhost:8000/api/v1/itinerary/${id}`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            
-            const result2 = await res.json();
-            
-            formData.itinerary.forEach(async (item, index) => {
-                const itinerary = {
-                    tourId: id,
-                    day: item.day,
-                    detail: item.detail
-                    
-                };
-                const addItinerary = await fetch(`http://localhost:8000/api/v1/itinerary`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(itinerary),
-                });
-                const addItineraryResult = await addItinerary.json();
-                console.log(addItineraryResult);
-            })
-            navigate('/tour-management');
+            if (result.success) {
+                navigate('/tour-management'); // Điều hướng về trang quản lý tour
+            } else {
+                console.error("Failed to update tour", result);
+            }
         } catch (error) {
             console.error("Error updating tour:", error);
         }
@@ -88,178 +112,120 @@ function UpdateTour() {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleItineraryChange = (index, e) => {
-        const { name, value } = e.target;
-        const newItinerary = formData.itinerary.map((item, i) => {
-            if (i === index) {
-                return { ...item, [name]: value };
-            }
-            return item;
-        });
-        setFormData({ ...formData, itinerary: newItinerary });
-    };
-
-    const addItineraryItem = () => {
-        setFormData({
-            ...formData,
-            itinerary: [...formData.itinerary, { day: formData.itinerary.length + 1, detail: '' }]
-        });
-    };
-
-    const removeItineraryItem = (index) => {
-        setFormData({
-            ...formData,
-            itinerary: formData.itinerary.filter((_, i) => i !== index)
-        });
-    };
-
     return (
-        <div className="container">
-            <h2 className="title">Update Tour</h2>
+        <div className="container mt-5">
+            <h2 className="title text-center mb-4">Update Tour</h2>
             <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3" controlId="formTitle">
-                    <Form.Label>Title</Form.Label>
-                    <Form.Control
-                        type="text"
-                        name="title"
-                        value={formData.title}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </Form.Group>
-                <Row>
-                    <Col md={6}>
-                    <Form.Group className="mb-3" controlId="formPhoto">
-                    <Form.Label>Photo</Form.Label>
-                    <Form.Control
-                        type="text"
-                        name="photo"
-                        value={formData.photo}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </Form.Group>
-                
-                
-                <Form.Group className="mb-3" controlId="formAddress">
-                    <Form.Label>Address</Form.Label>
-                    <Form.Control
-                        type="text"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </Form.Group>
-                <Form.Group className="mb-3" controlId="formCity">
-                    <Form.Label>City</Form.Label>
-                    <Form.Control
-                        type="text"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </Form.Group>
-                <Form.Group className="mb-3" controlId="formDistance">
-                    <Form.Label>Distance</Form.Label>
-                    <Form.Control
-                        type="number"
-                        name="distance"
-                        value={formData.distance}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </Form.Group>
-                <Row>
-                    <Col md={6}>
-                    <Form.Group className="mb-3" controlId="formMaxGroupSize">
-                    <Form.Label>Max Group Size</Form.Label>
-                    <Form.Control
-                        type="number"
-                        name="maxGroupSize"
-                        value={formData.maxGroupSize}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </Form.Group>
-                </Col>
-                <Col md={6}>
-                <Form.Group className="mb-3" controlId="formPrice">
-                    <Form.Label>Price</Form.Label>
-                    <Form.Control
-                        type="number"
-                        name="price"
-                        value={formData.price}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </Form.Group>
-                </Col>
-                </Row>
-                    </Col>
-                    <Col md={6}>
-                    <img src={formData.photo} alt={formData.title} />
-                    </Col>
-                </Row>
-                <Form.Label>Itinerary: </Form.Label>
-               
-                <Button variant="secondary" onClick={addItineraryItem} style={{padding: '0px 5px', margin: '5px'}}>+</Button>
-                <br/>
-                {formData.itinerary.map((item, index) => (
-                    <div key={index} className="mb-3">
-                        <div className="card">
-                            <div className="card-body">
-                                <div className="d-flex justify-content-between align-items-center">
-                                    <h5 className="card-title">Day {index + 1}</h5>
-                                    <Button 
-                                        variant="link" 
-                                        className="text-danger p-0" 
-                                        onClick={() => removeItineraryItem(index)}
-                                    >
-                                        <span aria-hidden="true">&times;</span>
-                                    </Button>
-                                </div>
-                                <div className="mb-3">
-                                    <Form.Group controlId={`formItineraryDay${index}`}>
-                                        <Form.Label>Day</Form.Label>
-                                        <Form.Control
-                                            type="number"
-                                            name="day"
-                                            value={item.day}
-                                            onChange={(e) => handleItineraryChange(index, e)}
-                                            required
-                                        />
-                                    </Form.Group>
-                                </div>
-                                <div className="mb-3">
-                                    <Form.Group controlId={`formItineraryDetail${index}`}>
-                                        <Form.Label>Detail</Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            name="detail"
-                                            value={item.detail}
-                                            onChange={(e) => handleItineraryChange(index, e)}
-                                            required
-                                        />
-                                    </Form.Group>
-                                </div>
-                            </div>
-                        </div>
+                <Card className="p-4 shadow-sm">
+                    <Row>
+                        <Col md={6}>
+                            <Form.Group className="mb-3" controlId="formTitle">
+                                <Form.Label>Title</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="title"
+                                    value={formData.title}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </Form.Group>
+
+                            <Form.Group className="mb-3" controlId="formPhoto">
+                                <Form.Label>Photo</Form.Label>
+                                <Form.Control
+                                    type="file"
+                                    name="file"
+                                    ref={fileInput}
+                                />
+                            </Form.Group>
+
+                            <Form.Group className="mb-3" controlId="formAddress">
+                                <Form.Label>Address</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="address"
+                                    value={formData.address}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </Form.Group>
+
+                            <Form.Group className="mb-3" controlId="formCity">
+                                <Form.Label>City</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleInputChange}
+                                    required
+                                >
+                                    <option value="">Select a city</option>
+                                    {locations.map((location) => (
+                                        <option key={location._id} value={location._id}>
+                                            {location.city}
+                                        </option>
+                                    ))}
+                                </Form.Control>
+                            </Form.Group>
+
+                            <Form.Group className="mb-3" controlId="formDistance">
+                                <Form.Label>Distance (km)</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    name="distance"
+                                    value={formData.distance}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </Form.Group>
+
+                            <Form.Group className="mb-3" controlId="formPrice">
+                                <Form.Label>Price ($)</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    name="price"
+                                    value={formData.price}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col md={6} className="d-flex justify-content-center align-items-center">
+                            {/* Hiển thị hình ảnh nếu có */}
+                            {fileInput.current && fileInput.current.files[0] ? (
+                                <img
+                                    src={URL.createObjectURL(fileInput.current.files[0])}
+                                    alt={formData.title}
+                                    style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'cover' }}
+                                />
+                            ) : (
+                                <img
+                                    src={formData.photo} // Hiển thị ảnh hiện tại nếu không có ảnh mới
+                                    alt={formData.title}
+                                    style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'cover' }}
+                                />
+                            )}
+                        </Col>
+                    </Row>
+
+                    <Form.Group className="mb-3" controlId="formDesc">
+                        <Form.Label>Description</Form.Label>
+                        <Form.Control
+                            as="textarea"
+                            rows={3}
+                            name="desc"
+                            value={formData.desc}
+                            onChange={handleInputChange}
+                            required
+                        />
+                    </Form.Group>
+
+                    <div className="text-center">
+                        <Button variant="primary" type="submit" className="px-5">
+                            Update Tour
+                        </Button>
                     </div>
-                ))}
-                <Form.Group className="mb-3" controlId="formDesc" id='formDesc'>
-                    <Form.Label>Description</Form.Label>
-                    <Form.Control
-                        as="textarea"
-                        name="desc"
-                        value={formData.desc}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </Form.Group>
-          
-                <Button variant="primary" type="submit">Update Tour</Button>
+                </Card>
             </Form>
         </div>
     );

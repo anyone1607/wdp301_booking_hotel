@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { FormControl, InputGroup, Modal, Table } from "react-bootstrap";
 import axios from "axios";
 import ReactPaginate from "react-paginate";
+import { toast } from "react-toastify"; // Thêm toastify
+import { useNavigate } from "react-router-dom"; // Sử dụng useNavigate
 import "./table.css"; // Import file CSS chứa phần styling cho Switch
 
 function TableBooking({ data }) {
@@ -13,6 +15,7 @@ function TableBooking({ data }) {
   const [restaurant, setRestaurant] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const bookingsPerPage = 10; // Hiển thị 10 hàng mỗi trang
+  const navigate = useNavigate(); // Khởi tạo navigate
 
   // Toggle trạng thái giữa 'pending', 'confirmed' và 'cancelled'
   const handleToggleStatus = async (id, currentStatus) => {
@@ -88,6 +91,12 @@ function TableBooking({ data }) {
 
     setSelectedBooking(booking);
     setShowModal(true);
+  };
+
+  // Hàm xử lý thanh toán thành công
+  const handlePaymentSuccess = () => {
+    toast.success("Thành công, vui lòng chờ quản lý duyệt booking của bạn.");
+    navigate("/my-booking"); // Chuyển hướng về /my-booking
   };
 
   // Phân trang
@@ -233,14 +242,25 @@ function TableBooking({ data }) {
                 })}
               </p>
               <p>
-                <strong>Status:</strong> {selectedBooking.status}
+                <strong>Price:</strong> {selectedBooking.price}
               </p>
               <p>
-                <strong>Price:</strong> {selectedBooking.price}
+                <strong>Status:</strong> {selectedBooking.status}
               </p>
             </div>
           )}
         </Modal.Body>
+        <Modal.Footer>
+          <button className="btn btn-secondary" onClick={handleCloseModal}>
+            Close
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={handlePaymentSuccess}
+          >
+            Confirm Payment
+          </button>
+        </Modal.Footer>
       </Modal>
     </div>
   );

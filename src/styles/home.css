@@ -102,7 +102,10 @@
 }
 
 .experience__img img {
-   width: 90%;
+   max-width: 80%;   /* Đảm bảo ảnh không vượt quá chiều rộng của phần tử chứa */
+   height: auto;      /* Giữ tỷ lệ khung hình của ảnh */
+   border-radius: 20px; /* Thêm bo góc cho ảnh để trông mềm mại hơn */
+   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Thêm hiệu ứng bóng cho ảnh */
 }
 
 /* GALLERY SECTION */

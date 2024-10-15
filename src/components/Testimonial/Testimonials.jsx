@@ -42,7 +42,7 @@ const Testimonials = () => {
          <div className='d-flex align-items-center gap-4 mt-3'>
             <img src={ava01} className='w-25 h-25 rounded-2' alt="" />
             <div>
-               <h6 className='mb-0 mt-3'>Quang Hiếu</h6>
+               <h6 className='mb-0 mt-3'>Nguyễn Kim Chung</h6>
                <p>Customer</p>
             </div>
          </div> 
@@ -55,7 +55,7 @@ const Testimonials = () => {
          <div className='d-flex align-items-center gap-4 mt-3'>
             <img src={ava02} className='w-25 h-25 rounded-2' alt="" />
             <div>
-               <h6 className='mb-0 mt-3'>Ngọc Ánh</h6>
+               <h6 className='mb-0 mt-3'>Lại Văn Chung</h6>
                <p>Customer</p>
             </div>
          </div> 
@@ -68,7 +68,7 @@ const Testimonials = () => {
          <div className='d-flex align-items-center gap-4 mt-3'>
             <img src={ava03} className='w-25 h-25 rounded-2' alt="" />
             <div>
-               <h6 className='mb-0 mt-3'>Phùng Thịnh</h6>
+               <h6 className='mb-0 mt-3'>Trương Trọng Hưng</h6>
                <p>Customer</p>
             </div>
          </div> 
@@ -81,7 +81,7 @@ const Testimonials = () => {
          <div className='d-flex align-items-center gap-4 mt-3'>
             <img src={ava03} className='w-25 h-25 rounded-2' alt="" />
             <div>
-               <h6 className='mb-0 mt-3'>Đình Đạt</h6>
+               <h6 className='mb-0 mt-3'>Nguyễn Quang Hiếu</h6>
                <p>Customer</p>
             </div>
          </div> 

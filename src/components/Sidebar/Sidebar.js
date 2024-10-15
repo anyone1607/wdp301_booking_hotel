@@ -96,6 +96,20 @@ function SideBar() {
               </Link>
             </li>
           )}
+           {/* Hiển thị Manage Locations chỉ cho admin */}
+           {userRole === "admin" && (
+            <li className={`${pathname === "/location-management" ? "active" : ""}`}>
+              <Link
+                className={`nav-link ${pathname === "/location-management" ? "active" : ""}`}
+                to="/location-management"
+                style={{ display: "flex", alignItems: "flex-end" }}
+              >
+                <GrContact style={{ fontSize: "24px" }} />  
+                &ensp;
+                <p style={{ fontSize: "14px" }}>Manage Locations</p>
+              </Link>
+            </li>
+          )}
 
           {/* Log out */}
           <li className={`${pathname === "/login" ? "active" : ""}`}>

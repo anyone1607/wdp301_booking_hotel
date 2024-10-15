@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Form, Button, Row, Col, Card } from 'react-bootstrap';
 import '../../styles/tourStyle.css';
@@ -9,16 +9,16 @@ function UpdateTour() {
         location: '',
         address: '',
         distance: '',
-        photo: '',
         desc: '',
         price: ''
     });
 
     const [locations, setLocations] = useState([]);
-    const { id } = useParams(); // lấy id của tour từ URL
+    const fileInput = useRef(null);
     const navigate = useNavigate();
+    const { id } = useParams(); // Lấy ID của tour từ URL
 
-    // Fetch locations khi component mount
+    // Fetch locations và tour khi component mount
     useEffect(() => {
         const fetchLocations = async () => {
             const token = localStorage.getItem("accessToken");
@@ -40,7 +40,6 @@ function UpdateTour() {
             }
         };
 
-        // Gọi API để lấy dữ liệu tour hiện tại
         const fetchTour = async () => {
             const token = localStorage.getItem("accessToken");
             try {
@@ -51,14 +50,14 @@ function UpdateTour() {
                 });
                 const data = await response.json();
                 if (data && data.data) {
+                    const tourData = data.data;
                     setFormData({
-                        title: data.data.title,
-                        location: data.data.location,
-                        address: data.data.address,
-                        distance: data.data.distance,
-                        photo: data.data.photo,
-                        desc: data.data.desc,
-                        price: data.data.price
+                        title: tourData.title,
+                        location: tourData.location[0], // Giả định là location là mảng
+                        address: tourData.address,
+                        distance: tourData.distance,
+                        desc: tourData.description,
+                        price: tourData.price
                     });
                 } else {
                     console.error("Failed to fetch tour data", data);
@@ -76,20 +75,30 @@ function UpdateTour() {
         event.preventDefault();
         const token = localStorage.getItem("accessToken");
 
+        const formDataToSend = new FormData();
+        formDataToSend.append("title", formData.title);
+        formDataToSend.append("location", formData.location); // ID của location
+        formDataToSend.append("address", formData.address);
+        formDataToSend.append("distance", formData.distance);
+        formDataToSend.append("desc", formData.desc);
+        formDataToSend.append("price", formData.price);
+        if (fileInput.current.files[0]) {
+            formDataToSend.append("file", fileInput.current.files[0]); // File ảnh nếu có
+        }
+
         try {
             const response = await fetch(`http://localhost:8000/api/v1/tours/${id}`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(formData),
+                body: formDataToSend,
             });
 
             const result = await response.json();
 
             if (result.success) {
-                navigate('/tour-management');
+                navigate('/tour-management'); // Điều hướng về trang quản lý tour
             } else {
                 console.error("Failed to update tour", result);
             }
@@ -122,13 +131,11 @@ function UpdateTour() {
                             </Form.Group>
 
                             <Form.Group className="mb-3" controlId="formPhoto">
-                                <Form.Label>Photo URL</Form.Label>
+                                <Form.Label>Photo</Form.Label>
                                 <Form.Control
-                                    type="text"
-                                    name="photo"
-                                    value={formData.photo}
-                                    onChange={handleInputChange}
-                                    required
+                                    type="file"
+                                    name="file"
+                                    ref={fileInput}
                                 />
                             </Form.Group>
 
@@ -184,11 +191,20 @@ function UpdateTour() {
                             </Form.Group>
                         </Col>
                         <Col md={6} className="d-flex justify-content-center align-items-center">
-                            <img
-                                src={formData.photo}
-                                alt={formData.title}
-                                style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'cover' }}
-                            />
+                            {/* Hiển thị hình ảnh nếu có */}
+                            {fileInput.current && fileInput.current.files[0] ? (
+                                <img
+                                    src={URL.createObjectURL(fileInput.current.files[0])}
+                                    alt={formData.title}
+                                    style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'cover' }}
+                                />
+                            ) : (
+                                <img
+                                    src={formData.photo} // Hiển thị ảnh hiện tại nếu không có ảnh mới
+                                    alt={formData.title}
+                                    style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'cover' }}
+                                />
+                            )}
                         </Col>
                     </Row>
 

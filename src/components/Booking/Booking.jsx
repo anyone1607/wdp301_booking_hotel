@@ -86,7 +86,7 @@ const Booking = ({ tour, avgRating }) => {
          // Gọi API để lấy số lượng phòng trống sau khi thay đổi ngày
          const hotelId = booking.hotelId; // Lấy hotelId từ booking
          if (hotelId) {
-            axios.get(`${BASE_URL}/availableRoomCount?hotelId=${hotelId}&bookAt=${value}&checkOut=${booking.checkOut}`, { withCredentials: true })
+            axios.get(`${BASE_URL}/availability?hotelId=${hotelId}&bookAt=${value}&checkOut=${booking.checkOut}`, { withCredentials: true })
                .then(response => {
                   setAvailableRoomCounts(response.data.data);
                })
@@ -109,7 +109,7 @@ const Booking = ({ tour, avgRating }) => {
          // Gọi API để lấy số lượng phòng trống sau khi thay đổi ngày
          const hotelId = booking.hotelId; // Lấy hotelId từ booking
          if (hotelId) {
-            axios.get(`${BASE_URL}/availableRoomCount?hotelId=${hotelId}&bookAt=${booking.bookAt}&checkOut=${value}`, { withCredentials: true })
+            axios.get(`${BASE_URL}/booking/availability?hotelId=${hotelId}&bookAt=${booking.bookAt}&checkOut=${value}`, { withCredentials: true })
                .then(response => {
                   setAvailableRoomCounts(response.data.data);
                })
@@ -132,7 +132,7 @@ const Booking = ({ tour, avgRating }) => {
 
          // Gọi API để lấy số lượng phòng trống
          if (booking.bookAt && booking.checkOut) {
-            const availableRoomCountResponse = await axios.get(`${BASE_URL}/availableRoomCount?hotelId=${hotelId}&bookAt=${booking.bookAt}&checkOut=${booking.checkOut}`, { withCredentials: true });
+            const availableRoomCountResponse = await axios.get(`${BASE_URL}/booking/availability?hotelId=${hotelId}&bookAt=${booking.bookAt}&checkOut=${booking.checkOut}`, { withCredentials: true });
             setAvailableRoomCounts(availableRoomCountResponse.data.data);
          }
       } catch (error) {

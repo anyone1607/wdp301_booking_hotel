@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Button, Row, Col, Card } from 'react-bootstrap';
 import '../../styles/tourStyle.css';
@@ -9,12 +9,12 @@ function CreateTour() {
         location: '', 
         address: '',
         distance: '',
-        photo: '',
         desc: '',
         price: ''
     });
 
     const [locations, setLocations] = useState([]);
+    const fileInput = useRef(null); // Thêm ref để truy cập input file
     const navigate = useNavigate();
 
     // Fetch locations khi component mount
@@ -48,14 +48,23 @@ function CreateTour() {
         const token = localStorage.getItem("accessToken");
         console.log("Submitting formData:", formData);
 
+        // Tạo FormData để gửi dữ liệu
+        const formDataToSend = new FormData();
+        formDataToSend.append("title", formData.title);
+        formDataToSend.append("location", formData.location);
+        formDataToSend.append("address", formData.address);
+        formDataToSend.append("distance", formData.distance);
+        formDataToSend.append("desc", formData.desc);
+        formDataToSend.append("price", formData.price);
+        formDataToSend.append("file", fileInput.current.files[0]); // Lấy file từ input
+
         try {
             const response = await fetch("http://localhost:8000/api/v1/tours", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(formData),
+                body: formDataToSend, // Gửi FormData
             });
 
             const result = await response.json();
@@ -94,12 +103,11 @@ function CreateTour() {
                             </Form.Group>
 
                             <Form.Group className="mb-3" controlId="formPhoto">
-                                <Form.Label>Photo URL</Form.Label>
+                                <Form.Label>Photo</Form.Label>
                                 <Form.Control
-                                    type="text"
-                                    name="photo"
-                                    value={formData.photo}
-                                    onChange={handleInputChange}
+                                    type="file" // Thay đổi thành input type file
+                                    name="file"
+                                    ref={fileInput} // Sử dụng ref để lấy file
                                     required
                                 />
                             </Form.Group>
@@ -156,11 +164,14 @@ function CreateTour() {
                             </Form.Group>
                         </Col>
                         <Col md={6} className="d-flex justify-content-center align-items-center">
-                            <img
-                                src={formData.photo}
-                                alt={formData.title}
-                                style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'cover' }}
-                            />
+                            {/* Hiển thị hình ảnh nếu có */}
+                            {fileInput.current && fileInput.current.files[0] && (
+                                <img
+                                    src={URL.createObjectURL(fileInput.current.files[0])}
+                                    alt={formData.title}
+                                    style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'cover' }}
+                                />
+                            )}
                         </Col>
                     </Row>
 

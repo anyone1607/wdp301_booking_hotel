@@ -32,6 +32,8 @@ import ErrorPage from "../pages/ErrorPage"; // Nhập trang ErrorPage
 import Location from "../pages/User/Location"; // import Location
 import LocationManagement from "../pages/admin/LocationManagement";
 import TourList from "../components/TourList/TourList";
+import RoomManagement from "../pages/admin/RoomManagement";
+import CreateRoom from "../pages/admin/CreateRoom";
 const Routers = () => {
   const { user } = useContext(AuthContext);
   const isAdminOrManager =
@@ -48,6 +50,9 @@ const Routers = () => {
     location.pathname.startsWith("/booking-management") ||
     location.pathname.startsWith("/create-tour") ||
     location.pathname.startsWith("/update-tour") ||
+    location.pathname.startsWith("/create-room") ||
+    location.pathname.startsWith("/update-room") ||
+
     location.pathname.startsWith("/contact-management");
 
   return (
@@ -137,6 +142,24 @@ const Routers = () => {
             }
           />
           <Route
+            path="/create-room"
+            element={
+              <ProtectedRoute
+                element={<CreateRoom />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />
+          <Route
+            path="/update-room/:id"
+            element={
+              <ProtectedRoute
+                element={<UpdateTour />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />
+          <Route
             path="/contact-management"
             element={
               <ProtectedRoute
@@ -151,6 +174,15 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<LocationManagement />}
+                // allowedRoles={["admin"]}
+              />
+            }
+          />
+           <Route
+            path="/room-management"
+            element={
+              <ProtectedRoute
+                element={<RoomManagement />}
                 // allowedRoles={["admin"]}
               />
             }

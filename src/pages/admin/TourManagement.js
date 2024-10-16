@@ -45,31 +45,44 @@ function TourManagement() {
       .catch((error) => console.error(error));
   };
 
-  const handleToggleFeatured = (id) => {
+  const handleToggleFeatured = id => {
     const token = localStorage.getItem("accessToken");
-    const tour = tours.find((t) => t._id === id);
+    const tour = tours.find(t => t._id === id);
+  
+    if (!tour) {
+      console.error(`Tour with id ${id} not found!`);
+      return;
+    }
   
     fetch(`http://localhost:8000/api/v1/tours/${id}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ featured: !tour.featured }), // Chỉ cập nhật trạng thái featured
+      body: JSON.stringify({ 
+        featured: !tour.featured, 
+        location: tour.location // Đảm bảo rằng bạn gửi lại location
+      }),
     })
-      .then((response) => response.json())
-      .then((updatedTour) => {
-        // Giữ nguyên dữ liệu location khi cập nhật
-        const updatedTourWithLocation = {
-          ...updatedTour.data,
-          location: tour.location, // Giữ nguyên thông tin location
-        };
-  
-        // Cập nhật danh sách tours
-        setTours(tours.map((t) => (t._id === id ? updatedTourWithLocation : t)));
-      })
-      .catch((error) => console.error("Error updating tour:", error));
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => {
+          throw new Error(`Error ${response.status}: ${err.message}`);
+        });
+      }
+      return response.json();
+    })
+    .then(updatedTour => {
+      setTours(tours.map(t => (t._id === id ? updatedTour.data : t)));
+    })
+    .catch(error => {
+      console.error('Error occurred:', error);
+    });
   };
+  
+  
+
   
 
   const handleSearchChange = (e) => {

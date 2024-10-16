@@ -61,7 +61,7 @@ function SideBar() {
                 >
                   <CiMap style={{ fontSize: "24px" }} />
                   &ensp;
-                  <p style={{ fontSize: "14px" }}>Manage Tours</p>
+                  <p style={{ fontSize: "14px" }}>Manage Hotels</p>
                 </Link>
               </li>
             </>
@@ -110,6 +110,21 @@ function SideBar() {
               </Link>
             </li>
           )}
+          {/* Hiển thị Manage Locations chỉ cho admin */}
+          {userRole === "admin" && (
+            <li className={`${pathname === "/room-management" ? "active" : ""}`}>
+              <Link
+                className={`nav-link ${pathname === "/room-management" ? "active" : ""}`}
+                to="/room-management"
+                style={{ display: "flex", alignItems: "flex-end" }}
+              >
+                <GrContact style={{ fontSize: "24px" }} />  
+                &ensp;
+                <p style={{ fontSize: "14px" }}>Manage Room</p>
+              </Link>
+            </li>
+          )}
+
 
           {/* Log out */}
           <li className={`${pathname === "/login" ? "active" : ""}`}>

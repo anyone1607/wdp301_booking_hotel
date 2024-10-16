@@ -46,7 +46,7 @@ const TourDetails = () => {
    const navigate = useNavigate();
 
    const submitHandler = async e => {
-      e.preventDefault();
+      // e.preventDefault();
       const reviewText = reviewMsgRef.current.value;
 
       try {
@@ -69,7 +69,7 @@ const TourDetails = () => {
          };
 
          const res = await fetch(`${BASE_URL}/review/${id}`, {
-            method: 'post',
+            method: 'POST',
             headers: {
                'Content-Type': 'application/json'
             },
@@ -90,7 +90,7 @@ const TourDetails = () => {
             confirmButtonColor: '#3085d6',
             timer: 1500
          })
-         navigate(`/tours`);
+         navigate(`/tours/${hotelId}`);
       } catch (error) {
          alert(error.message);
       }
@@ -101,13 +101,11 @@ const TourDetails = () => {
          if (!user) {
             return; // Do not fetch if user is not logged in
          }
-
          try {
             const bookingsResponse = await axios.get(`${BASE_URL}/booking`, {
                withCredentials: true,
             });
-
-            setBookings(bookingsResponse.data.data.filter(b => title === b.tourName));
+            setBookings(bookingsResponse.data.data.filter(b => id === b.hotelId));
 
          } catch (error) {
             console.error("Error fetching bookings:", error);
@@ -116,10 +114,12 @@ const TourDetails = () => {
 
       fetchData();
       window.scrollTo(0, 0);
-   }, [tour, user]);
+   }, [user]);
 
    // Check if the current user has a completed booking for the tour
    const userCanReview = bookings.some(booking => booking.userId === user?._id && booking.status === 'confirmed');
+
+   console.log(bookings)
 
    return (
       <section>

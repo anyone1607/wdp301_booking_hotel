@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import './booking.css';
-import { Form, FormGroup, Button } from 'reactstrap';
+import { Form, FormGroup, Button, Row, Col } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { BASE_URL } from '../../utils/config';
@@ -9,19 +9,30 @@ import axios from 'axios';
 const Booking = ({ tour, avgRating }) => {
    const { price, reviews, title } = tour;
    const [itinerary, setItinerary] = useState([]);
-   const [hotels, setHotels] = useState([]);
    const [roomCategories, setRoomCategories] = useState([]);
    const [extraFee, setExtraFee] = useState([]);
    const [selectedRooms, setSelectedRooms] = useState({});
    const [selectedExtras, setSelectedExtras] = useState([]);
    const [availableRoomCounts, setAvailableRoomCounts] = useState([]);
 
-   const tourId = tour._id;
+   const hotelId = tour._id;
+
    const navigate = useNavigate();
    const { user } = useContext(AuthContext);
 
+   const today = new Date();
+   const tomorrow = new Date(today);
+   tomorrow.setDate(tomorrow.getDate() + 1);
+
+   const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      return `${year}-${month}-${day}`;
+   };
+
    const [booking, setBooking] = useState({
-      userId: user && user._id,
+      userId: user ? user._id : null,
       roomIds: [],
       extraIds: [],
       name: '',
@@ -29,8 +40,8 @@ const Booking = ({ tour, avgRating }) => {
       adult: 1,
       children: 0,
       baby: 0,
-      bookAt: '',
-      checkOut: '',
+      bookAt: formatDate(today),
+      checkOut: formatDate(tomorrow),
       status: 'pending',
       totalAmount: 0,
    });
@@ -45,101 +56,94 @@ const Booking = ({ tour, avgRating }) => {
    });
 
    useEffect(() => {
+      if (!hotelId) return;
+
       const fetchData = async () => {
          try {
+            const [responseRC, responseET, responseAvailability] = await Promise.all([
+               axios.get(`${BASE_URL}/roomCategory/hotel/${hotelId}`, { withCredentials: true }),
+               axios.get(`${BASE_URL}/extraFee/hotel/${hotelId}`, { withCredentials: true }),
+               axios.get(`${BASE_URL}/booking/availability/${hotelId}/${booking.bookAt}/${booking.checkOut}`, { withCredentials: true }),
+
+            ]);
+
+            setRoomCategories(responseRC.data);
+            setExtraFee(responseET.data.data);
+            setAvailableRoomCounts(responseAvailability.data.availableRooms);
          } catch (error) {
-            console.error("Error fetching data:", error);
+            console.error("Lỗi khi lấy dữ liệu:", error);
          }
       };
 
       fetchData();
-   }, [tourId]);
+   }, [hotelId, booking.bookAt, booking.checkOut]);
 
    const handleChange = e => {
       const { id, value } = e.target;
+      const today = new Date();
+      const selectedDate = new Date(value);
+      const bookAtDate = new Date(booking.bookAt);
+      const checkOutDate = new Date(booking.checkOut);
+
       setBooking(prev => ({ ...prev, [id]: value }));
 
-      if (id === 'adult' || id === 'children' || id === 'baby') {
+      // Validation for date fields
+      if (id === 'bookAt') {
+         if (selectedDate < today.setHours(0, 0, 0, 0)) {
+            setErrors(prev => ({ ...prev, bookAt: 'Ngày đặt phòng không được trong quá khứ.' }));
+         } else {
+            setErrors(prev => ({ ...prev, bookAt: '' }));
+         }
+      }
+
+      if (id === 'checkOut') {
+         const diffTime = selectedDate - bookAtDate;
+         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Số ngày chênh lệch
+         if (diffDays < 1) {
+            setErrors(prev => ({ ...prev, checkOut: 'Ngày trả phòng phải sau ngày đặt ít nhất 1 ngày.' }));
+         } else {
+            setErrors(prev => ({ ...prev, checkOut: '' }));
+         }
+      }
+
+      if (id === 'name') {
+         const namePattern = /^[a-zA-ZÀ-ỹ\s]+$/u; // Full name should only contain letters and spaces
+         if (!namePattern.test(value)) {
+            setErrors(prev => ({ ...prev, name: 'Full name must contain only letters and spaces.' }));
+         } else if (value.trim().length < 3) {
+            setErrors(prev => ({ ...prev, name: 'Full name must be at least 3 characters long.' }));
+         } else {
+            setErrors(prev => ({ ...prev, name: '' }));
+         }
+      }
+
+      if (id === 'phone') {
+         const phonePattern = /^0\d{9}$/; // Vietnamese phone number format
+         if (!phonePattern.test(value)) {
+            setErrors(prev => ({ ...prev, phone: 'Phone number must start with 0 and have 10 digits.' }));
+         } else {
+            setErrors(prev => ({ ...prev, phone: '' }));
+         }
+      }
+
+      if (['adult', 'children', 'baby'].includes(id)) {
          if (value < 0) {
             setErrors(prev => ({ ...prev, [id]: `${id} must be at least 0.` }));
          } else {
             setErrors(prev => ({ ...prev, [id]: '' }));
          }
       }
-
-      if (id === 'bookAt') {
-         const bookingDate = new Date(value);
-         const today = new Date();
-         today.setHours(0, 0, 0, 0);
-
-         if (bookingDate < today) {
-            setErrors(prev => ({ ...prev, bookAt: 'Booking date cannot be in the past.' }));
-         } else {
-            setErrors(prev => ({ ...prev, bookAt: '' }));
-         }
-
-         // Gọi API để lấy số lượng phòng trống sau khi thay đổi ngày
-         const hotelId = booking.hotelId; // Lấy hotelId từ booking
-         if (hotelId) {
-            axios.get(`${BASE_URL}/availableRoomCount?hotelId=${hotelId}&bookAt=${value}&checkOut=${booking.checkOut}`, { withCredentials: true })
-               .then(response => {
-                  setAvailableRoomCounts(response.data.data);
-               })
-               .catch(error => {
-                  console.error("Error fetching available room count:", error);
-               });
-         }
-      }
-
-      if (id === 'checkOut') {
-         const checkOutDate = new Date(value);
-         const bookAtDate = new Date(booking.bookAt);
-
-         if (checkOutDate <= bookAtDate) {
-            setErrors(prev => ({ ...prev, checkOut: 'Check-out date must be after booking date.' }));
-         } else {
-            setErrors(prev => ({ ...prev, checkOut: '' }));
-         }
-
-         // Gọi API để lấy số lượng phòng trống sau khi thay đổi ngày
-         const hotelId = booking.hotelId; // Lấy hotelId từ booking
-         if (hotelId) {
-            axios.get(`${BASE_URL}/availableRoomCount?hotelId=${hotelId}&bookAt=${booking.bookAt}&checkOut=${value}`, { withCredentials: true })
-               .then(response => {
-                  setAvailableRoomCounts(response.data.data);
-               })
-               .catch(error => {
-                  console.error("Error fetching available room count:", error);
-               });
-         }
-      }
    };
 
-   const handleSelectHotelChange = async (e) => {
-      const hotelId = e.target.value;
-      setBooking(prev => ({ ...prev, hotelId }));
-
-      try {
-         const responseRC = await axios.get(`${BASE_URL}/roomCategory/hotel/${hotelId}`, { withCredentials: true });
-         setRoomCategories(responseRC.data);
-         const responseET = await axios.get(`${BASE_URL}/extraFee/hotel/${hotelId}`, { withCredentials: true });
-         setExtraFee(responseET.data.data);
-
-         // Gọi API để lấy số lượng phòng trống
-         if (booking.bookAt && booking.checkOut) {
-            const availableRoomCountResponse = await axios.get(`${BASE_URL}/availableRoomCount?hotelId=${hotelId}&bookAt=${booking.bookAt}&checkOut=${booking.checkOut}`, { withCredentials: true });
-            setAvailableRoomCounts(availableRoomCountResponse.data.data);
-         }
-      } catch (error) {
-         console.error("Error fetching room categories and extra fees:", error);
-      }
-   };
 
    const handleSelectRoomChange = (roomId, quantity) => {
-      setSelectedRooms(prev => ({
-         ...prev,
-         [roomId]: quantity
-      }));
+      const parsedQuantity = parseInt(quantity, 10);
+      if (!isNaN(parsedQuantity) && parsedQuantity >= 0) {
+         setSelectedRooms(prev => ({
+            ...prev,
+            [roomId]: parsedQuantity
+         }));
+      }
    };
 
    const handleExtraFeeChange = (extraId, isChecked) => {
@@ -151,15 +155,21 @@ const Booking = ({ tour, avgRating }) => {
    };
 
    const calculateTotalAmount = () => {
+      // Tính số đêm giữa checkOut và bookAt
+      const checkInDate = new Date(booking.bookAt);
+      const checkOutDate = new Date(booking.checkOut);
+      const diffTime = Math.abs(checkOutDate - checkInDate);
+      const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // số ngày chênh lệch
+
       let total = 0;
 
-      // Calculate room costs
+      // Tính tổng tiền cho các phòng
       Object.entries(selectedRooms).forEach(([roomId, quantity]) => {
          const room = roomCategories.find(room => room._id === roomId);
-         total += (room.roomPrice * quantity);
+         total += (room.roomPrice * quantity * nights); // giá phòng * số lượng phòng * số đêm
       });
 
-      // Add extra fees
+      // Tính tổng tiền cho các dịch vụ thêm
       selectedExtras.forEach(extraId => {
          const extra = extraFee.find(fee => fee._id === extraId);
          total += extra.extraPrice;
@@ -167,6 +177,7 @@ const Booking = ({ tour, avgRating }) => {
 
       return total;
    };
+
 
    const handleClick = async e => {
       e.preventDefault();
@@ -186,16 +197,17 @@ const Booking = ({ tour, avgRating }) => {
             });
 
             const res = await fetch(`${BASE_URL}/booking`, {
-               method: 'post',
+               method: 'POST',
                headers: {
                   'Content-Type': 'application/json'
                },
                credentials: 'include',
                body: JSON.stringify({
                   ...booking,
-                  roomIds: roomIds,
+                  hotelId,
+                  roomIds,
                   extraIds: selectedExtras,
-                  totalAmount: totalAmount
+                  totalAmount
                })
             });
 
@@ -204,7 +216,8 @@ const Booking = ({ tour, avgRating }) => {
             if (!res.ok) {
                return alert(result.message);
             }
-            navigate('/thank-you');
+            // navigate('/thank-you');
+            navigate('/my-booking');
          } catch (error) {
             alert(error.message);
          }
@@ -226,7 +239,7 @@ const Booking = ({ tour, avgRating }) => {
    return (
       <div className='booking'>
          <div className="booking__top d-flex align-items-center justify-content-between">
-            <h3>${price} <span>/per person</span></h3>
+            <h3>{title} </h3>
             <span className="tour__rating d-flex align-items-center">
                <i className='ri-star-fill' style={{ color: 'var(--secondary-color)' }}></i>
                {avgRating === 0 ? null : avgRating} ({reviews?.length})
@@ -238,67 +251,122 @@ const Booking = ({ tour, avgRating }) => {
             <Form className='booking__info-form' onSubmit={handleClick}>
                <FormGroup>
                   <input type="text" placeholder='Full Name' id='name' required onChange={handleChange} />
+                  {errors.name && <span className="error">{errors.name}</span>}
                </FormGroup>
+
                <FormGroup>
                   <input type="tel" placeholder='Phone' id='phone' required onChange={handleChange} />
+                  {errors.phone && <span className="error">{errors.phone}</span>}
                </FormGroup>
+
                <FormGroup>
-                  <select name="hotelId" id="hotelId" onChange={handleSelectHotelChange} required>
-                     <option value="">Select Hotel</option>
-                     {hotels.map(hotel => (
-                        <option key={hotel._id} value={hotel._id}>{hotel.name}</option>
-                     ))}
-                  </select>
-               </FormGroup>
-               <FormGroup>
-                  <input type="date" placeholder='Check-in Date' id='bookAt' onChange={handleChange} required />
-                  {errors.bookAt && <span className="error">{errors.bookAt}</span>}
-               </FormGroup>
-               <FormGroup>
-                  <input type="date" placeholder='Check-out Date' id='checkOut' onChange={handleChange} required />
-                  {errors.checkOut && <span className="error">{errors.checkOut}</span>}
-               </FormGroup>
-               <FormGroup>
-                  <input type="number" id='adult' value={booking.adult} onChange={handleChange} min="1" required />
-                  <input type="number" id='children' value={booking.children} onChange={handleChange} min="0" />
-                  <input type="number" id='baby' value={booking.baby} onChange={handleChange} min="0" />
+                  <Row>
+                     <Col className="d-flex align-items-center justify-content-evenly">
+                        <strong>Adult</strong>
+                        <input className='m-0 w-50' type="number" id='adult' value={booking.adult} onChange={handleChange} min="1" required />
+                     </Col>
+                     <Col className="d-flex align-items-center justify-content-evenly">
+
+                        <strong>Children </strong>
+                        <input className='m-0 w-50' type="number" id='children' value={booking.children} onChange={handleChange} min="0" />
+                     </Col>
+                     <Col className="d-flex align-items-center justify-content-evenly">
+
+                        <strong>Baby </strong>
+                        <input className='m-0 w-50' type="number" id='baby' value={booking.baby} onChange={handleChange} min="0" />
+                     </Col>
+                  </Row>
+
                   {errors.adult && <span className="error">{errors.adult}</span>}
                   {errors.children && <span className="error">{errors.children}</span>}
                   {errors.baby && <span className="error">{errors.baby}</span>}
                </FormGroup>
+               <Row>
+                  <Col>
+                     <FormGroup className="d-flex align-items-center justify-content-evenly">
+                        <strong>BookAt</strong>
+                        <input
+                           className='m-0 w-50'
+                           type="date"
+                           id="bookAt"
+                           onChange={handleChange}
+                           required
+                           defaultValue={booking.bookAt}
+                        />
+
+                     </FormGroup>
+
+                  </Col>
+                  <Col>
+                     <FormGroup className="d-flex align-items-center justify-content-evenly">
+                        <strong>CheckOut</strong>
+                        <input
+                           className='m-0 w-50'
+                           type="date"
+                           id="checkOut"
+                           onChange={handleChange}
+                           required
+                           defaultValue={booking.checkOut}
+                        />
+
+                     </FormGroup>
+
+                  </Col>
+                  {errors.bookAt && <span className="error text-danger">{errors.bookAt}</span>}
+                  {errors.checkOut && <span className="error text-danger">{errors.checkOut}</span>}
+               </Row>
+
                <FormGroup>
-                  <h6>Available Rooms</h6>
-                  {availableRoomCounts.length > 0 && availableRoomCounts.map(room => (
-                     <div key={room.roomId}>
-                        <label>
-                           {room.roomName}: {room.availableCount} available
+                  <h6>Chọn Phòng</h6>
+                  {roomCategories.length > 0 && roomCategories.map(room => {
+                     const availableRoomCount = availableRoomCounts.find(rc => rc.roomId === room._id)?.availableCount || 0;
+                     return (
+                        <div key={room._id} className="d-flex align-items-center justify-content-around">
+                           <label>
+                              {room.roomName} - ${room.roomPrice}
+                              <span style={{ marginLeft: '10px', fontStyle: 'italic', color: 'gray' }}>
+                                 (Còn lại: {availableRoomCount} phòng)
+                              </span>
+                           </label>
+
+                           {/* Kiểm tra nếu số phòng còn lại là 0, hiển thị thông báo "Hết phòng" */}
+                           {availableRoomCount === 0 ? (
+                              <span className="text-danger">Hết phòng</span>
+                           ) : (
+                              <input
+                                 className='m-0 w-25'
+                                 type="number"
+                                 min="0"
+                                 max={availableRoomCount}
+                                 placeholder="Số lượng"
+                                 onChange={(e) => handleSelectRoomChange(room._id, e.target.value)}
+                              />
+                           )}
+                        </div>
+                     );
+                  })}
+               </FormGroup>
+
+               <FormGroup>
+                  <h6>Chọn dịch vụ thêm</h6>
+                  {extraFee.length > 0 && extraFee.map(fee => (
+                     <div key={fee._id}>
+                        <label className="d-flex align-items-center">
+                           <input
+                              className='m-0'
+                              style={{ width: '25px' }}
+                              type="checkbox"
+                              onChange={(e) => handleExtraFeeChange(fee._id, e.target.checked)}
+                           />
+                           <span>{fee.extraName} - ${fee.extraPrice}</span>
                         </label>
                      </div>
                   ))}
                </FormGroup>
                <FormGroup>
-                  <h6>Room Selection</h6>
-                  {roomCategories.length > 0 && roomCategories.map(room => (
-                     <div key={room._id}>
-                        <label>{room.roomName} - ${room.roomPrice}</label>
-                        <input type="number" min="0" placeholder="Quantity" onChange={(e) => handleSelectRoomChange(room._id, e.target.value)} />
-                     </div>
-                  ))}
+                  <h6>Tổng số tiền: ${calculateTotalAmount()}</h6>
                </FormGroup>
-               <FormGroup>
-                  <h6>Extra Fees</h6>
-                  {extraFee.length > 0 && extraFee.map(extra => (
-                     <div key={extra._id}>
-                        <label>
-                           <input type="checkbox" onChange={(e) => handleExtraFeeChange(extra._id, e.target.checked)} /> {extra.extraName} - ${extra.extraPrice}
-                        </label>
-                     </div>
-                  ))}
-               </FormGroup>
-               <div className="total__amount">
-                  <h5>Total Amount: ${calculateTotalAmount()}</h5>
-               </div>
-               <Button type='submit' color='primary'>Book Now</Button>
+               <Button type='submit' color='primary' className='btn primary__btn w-100 mt-4'>Book Now</Button>
             </Form>
          </div>
       </div>

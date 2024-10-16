@@ -21,11 +21,13 @@ const Tours = () => {
       let sortedArray = [...tours];
       if (sortCriteria === 'location') {
         sortedArray.sort((a, b) => a.city.localeCompare(b.city));
-      } else if (sortCriteria === 'priceAsc') {
-        sortedArray.sort((a, b) => a.price - b.price);
-      } else if (sortCriteria === 'priceDesc') {
-        sortedArray.sort((a, b) => b.price - a.price);
-      } else if (sortCriteria === 'rating') {
+      }
+      // else if (sortCriteria === 'priceAsc') {
+      //   sortedArray.sort((a, b) => a.price - b.price);
+      // } else if (sortCriteria === 'priceDesc') {
+      //   sortedArray.sort((a, b) => b.price - a.price);
+      // } 
+      else if (sortCriteria === 'rating') {
         sortedArray.sort((a, b) => b.rating - a.rating);
       }
       setSortedTours(sortedArray);
@@ -53,8 +55,8 @@ const Tours = () => {
                 className="form-control sort-select"
               >
                 <option value="">All</option>
-                <option value="priceAsc">Price: Low to High</option>
-                <option value="priceDesc">Price: High to Low</option>
+                {/* <option value="priceAsc">Price: Low to High</option>
+                <option value="priceDesc">Price: High to Low</option> */}
                 <option value="location">Location</option>
                 <option value="rating">Most ratings</option>
               </select>

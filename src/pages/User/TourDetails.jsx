@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import '../../styles/tour-details.css';
-import { Container, Row, Col, Form, ListGroup } from 'reactstrap';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Container, Row, Col, Form, ListGroup, Card, CardBody, CardTitle, CardText, Button } from 'reactstrap';
+import { useNavigate, useParams } from 'react-router-dom';
 import calculateAvgRating from '../../utils/avgRating';
 import avatar from '../../assets/images/avatar.jpg';
 import Booking from '../../components/Booking/Booking';
@@ -17,27 +17,45 @@ const TourDetails = () => {
    const [tourRating, setTourRating] = useState(null);
    const { user } = useContext(AuthContext);
 
-   // fetch data from database
+   // Fetch tour data from database
    const { data: tour, loading, error } = useFetch(`${BASE_URL}/tours/${id}`);
    const [bookings, setBookings] = useState([]);
-
-   const { photo, title, desc, price, reviews, city, address, distance, maxGroupSize } = tour || {};
+   const [roomCategories, setRoomCategories] = useState([]);
+   const { photo, title, desc, reviews, city, address, distance, maxGroupSize } = tour || {};
 
    const { totalRating, avgRating } = calculateAvgRating(reviews);
+   const hotelId = id;
+
+   // Fetch room categories based on the hotel ID
+   useEffect(() => {
+      if (!hotelId) return;
+
+      const fetchData = async () => {
+         try {
+            const responseRC = await axios.get(`${BASE_URL}/roomCategory/hotel/${hotelId}`, { withCredentials: true });
+            setRoomCategories(responseRC.data);
+         } catch (error) {
+            console.error("Error fetching room categories:", error);
+         }
+      };
+
+      fetchData();
+   }, [hotelId]);
 
    const options = { day: 'numeric', month: 'long', year: 'numeric' };
    const navigate = useNavigate();
+
    const submitHandler = async e => {
-      e.preventDefault();
+      // e.preventDefault();
       const reviewText = reviewMsgRef.current.value;
 
       try {
          if (!user || !user._id) {
             Swal.fire({
                icon: 'error',
-               title: 'Bạn phải đăng nhập để đánh giá',
+               title: 'You must be logged in to submit a review',
                showConfirmButton: true,
-               confirmButtonText: 'Đăng nhập',
+               confirmButtonText: 'Log in',
                confirmButtonColor: '#3085d6',
                timer: 1500
             })
@@ -51,7 +69,7 @@ const TourDetails = () => {
          };
 
          const res = await fetch(`${BASE_URL}/review/${id}`, {
-            method: 'post',
+            method: 'POST',
             headers: {
                'Content-Type': 'application/json'
             },
@@ -66,13 +84,13 @@ const TourDetails = () => {
 
          Swal.fire({
             icon: 'success',
-            title: 'Đánh giá thành công',
+            title: 'Review submitted successfully',
             showConfirmButton: true,
             confirmButtonText: 'OK',
             confirmButtonColor: '#3085d6',
             timer: 1500
          })
-         navigate(`/tours`);
+         navigate(`/tours/${hotelId}`);
       } catch (error) {
          alert(error.message);
       }
@@ -83,25 +101,25 @@ const TourDetails = () => {
          if (!user) {
             return; // Do not fetch if user is not logged in
          }
-
          try {
             const bookingsResponse = await axios.get(`${BASE_URL}/booking`, {
                withCredentials: true,
             });
-
-            setBookings(bookingsResponse.data.data.filter(b => title === b.tourName));
+            setBookings(bookingsResponse.data.data.filter(b => id === b.hotelId));
 
          } catch (error) {
-            console.error("Error fetching data:", error);
+            console.error("Error fetching bookings:", error);
          }
       };
 
       fetchData();
       window.scrollTo(0, 0);
-   }, [tour, user]);
+   }, [user]);
 
    // Check if the current user has a completed booking for the tour
    const userCanReview = bookings.some(booking => booking.userId === user?._id && booking.status === 'confirmed');
+
+   console.log(bookings)
 
    return (
       <section>
@@ -125,15 +143,41 @@ const TourDetails = () => {
 
                               <span><i className='ri-map-pin-fill'></i> {address}</span>
                            </div>
-
                            <div className="tour__extra-details">
                               <span><i className='ri-map-pin-2-line'></i> {city}</span>
-                              <span><i className='ri-money-dollar-circle-line'></i> {price}/ per person</span>
-                              <span><i className='ri-map-pin-time-line'></i> {distance} k/m</span>
+                              <span><i className='ri-map-pin-time-line'></i> {distance} km</span>
                            </div>
                            <h5>Description</h5>
                            <p>{desc}</p>
                         </div>
+                        {/* ============ Room Category Section START ============ */}
+                        <div className="room-category-section mt-5">
+                           <h4>Room Categories</h4>
+                           <Row className="room-category-list">
+                              {roomCategories.length > 0 ? (
+                                 roomCategories.map((category, index) => (
+                                    <Col lg="4" md="6" sm="12" key={index} className="mb-3" >
+                                       <Card style={{ height: "300px" }}>
+                                          <CardBody>
+                                             <CardTitle tag="h5">{category.roomName}</CardTitle>
+                                             <CardText>
+                                                <strong>Price: </strong> {category.roomPrice} $
+                                                <br />
+                                                <strong>Max Occupancy: </strong>  {category.maxOccupancy} persons
+                                                <br />
+                                                <strong>Description: </strong> {category.description}
+                                             </CardText>
+                                          </CardBody>
+                                       </Card>
+                                    </Col>
+                                 ))
+                              ) : (
+                                 <p>No room categories available for this hotel.</p>
+                              )}
+                           </Row>
+                        </div>
+                        {/* ============ Room Category Section END ============ */}
+
 
                         {/* ============ TOUR REVIEWS SECTION START ============ */}
                         <div className="tour__reviews mt-4">

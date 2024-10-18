@@ -142,17 +142,7 @@ function CreateExtrafees() {
                         </Col>
                     </Row>
 
-                    <Form.Group className="mb-3" controlId="formDescription">
-                        <Form.Label>Description</Form.Label>
-                        <Form.Control
-                            as="textarea"
-                            rows={3}
-                            name="description"
-                            value={formData.description}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </Form.Group>
+                
 
                     <div className="text-center">
                         <Button variant="primary" type="submit" className="px-5">

@@ -34,6 +34,10 @@ import LocationManagement from "../pages/admin/LocationManagement";
 import TourList from "../components/TourList/TourList";
 import RoomManagement from "../pages/admin/RoomManagement";
 import CreateRoom from "../pages/admin/CreateRoom";
+import UpdateRoom from "../pages/admin/UpdateRoom";
+import ExtrafeesManagement from "../pages/admin/ExtrafeesManagement";
+import CreateExtrafees from "../pages/admin/CreateExtrafees";
+import UpdateExtrafees from "../pages/admin/UpdateExtrafees";
 const Routers = () => {
   const { user } = useContext(AuthContext);
   const isAdminOrManager =
@@ -141,6 +145,15 @@ const Routers = () => {
               />
             }
           />
+           <Route
+            path="/update-room/:id"
+            element={
+              <ProtectedRoute
+                element={<UpdateRoom />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />
           <Route
             path="/create-room"
             element={
@@ -150,11 +163,29 @@ const Routers = () => {
               />
             }
           />
+           <Route
+            path="/create-extrafee"
+            element={
+              <ProtectedRoute
+                element={<CreateExtrafees />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />
           <Route
             path="/update-room/:id"
             element={
               <ProtectedRoute
                 element={<UpdateTour />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />
+             <Route
+            path="/update-extrafee/:id"
+            element={
+              <ProtectedRoute
+                element={<UpdateExtrafees />}
                 allowedRoles={["admin"]}
               />
             }
@@ -183,6 +214,15 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<RoomManagement />}
+                // allowedRoles={["admin"]}
+              />
+            }
+          />
+           <Route
+            path="/extrafees-management"
+            element={
+              <ProtectedRoute
+                element={<ExtrafeesManagement />}
                 // allowedRoles={["admin"]}
               />
             }

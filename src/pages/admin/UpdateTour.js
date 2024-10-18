@@ -10,15 +10,15 @@ function UpdateTour() {
         address: '',
         distance: '',
         desc: '',
-        price: ''
+        price: '',
+        photo: '' // Thêm trường cho ảnh
     });
 
     const [locations, setLocations] = useState([]);
     const fileInput = useRef(null);
     const navigate = useNavigate();
-    const { id } = useParams(); // Lấy ID của tour từ URL
+    const { id } = useParams();
 
-    // Fetch locations và tour khi component mount
     useEffect(() => {
         const fetchLocations = async () => {
             const token = localStorage.getItem("accessToken");
@@ -29,7 +29,6 @@ function UpdateTour() {
                     },
                 });
                 const data = await response.json();
-
                 if (Array.isArray(data)) {
                     setLocations(data);
                 } else {
@@ -53,11 +52,12 @@ function UpdateTour() {
                     const tourData = data.data;
                     setFormData({
                         title: tourData.title,
-                        location: tourData.location[0], // Giả định là location là mảng
+                        location: tourData.location[0]._id, // Giả định location là một mảng và lấy ID của vị trí đầu tiên
                         address: tourData.address,
                         distance: tourData.distance,
-                        desc: tourData.description,
-                        price: tourData.price
+                        desc: tourData.desc,
+                        price: tourData.price,
+                        photo: tourData.photo // Lưu trữ URL của ảnh
                     });
                 } else {
                     console.error("Failed to fetch tour data", data);
@@ -77,13 +77,13 @@ function UpdateTour() {
 
         const formDataToSend = new FormData();
         formDataToSend.append("title", formData.title);
-        formDataToSend.append("location", formData.location); // ID của location
+        formDataToSend.append("location", formData.location);
         formDataToSend.append("address", formData.address);
         formDataToSend.append("distance", formData.distance);
         formDataToSend.append("desc", formData.desc);
         formDataToSend.append("price", formData.price);
         if (fileInput.current.files[0]) {
-            formDataToSend.append("file", fileInput.current.files[0]); // File ảnh nếu có
+            formDataToSend.append("file", fileInput.current.files[0]);
         }
 
         try {
@@ -98,7 +98,7 @@ function UpdateTour() {
             const result = await response.json();
 
             if (result.success) {
-                navigate('/tour-management'); // Điều hướng về trang quản lý tour
+                navigate('/tour-management');
             } else {
                 console.error("Failed to update tour", result);
             }
@@ -191,20 +191,12 @@ function UpdateTour() {
                             </Form.Group>
                         </Col>
                         <Col md={6} className="d-flex justify-content-center align-items-center">
-                            {/* Hiển thị hình ảnh nếu có */}
-                            {fileInput.current && fileInput.current.files[0] ? (
-                                <img
-                                    src={URL.createObjectURL(fileInput.current.files[0])}
-                                    alt={formData.title}
-                                    style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'cover' }}
-                                />
-                            ) : (
-                                <img
-                                    src={formData.photo} // Hiển thị ảnh hiện tại nếu không có ảnh mới
-                                    alt={formData.title}
-                                    style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'cover' }}
-                                />
-                            )}
+                            {/* Hiển thị hình ảnh hiện tại */}
+                            <img
+                                src={formData.photo}
+                                alt={formData.title}
+                                style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'cover' }}
+                            />
                         </Col>
                     </Row>
 

@@ -28,7 +28,8 @@ function SideBar() {
           {userRole === "admin" && (
             <li className={`${pathname === "/dashboard" ? "active" : ""}`}>
               <Link
-                className={`nav-link ${pathname === "/dashboard" ? "active" : ""}`}
+                className={`nav-link ${pathname === "/dashboard" ? "active" : ""
+                  }`}
                 to="/dashboard"
                 aria-current="page"
                 style={{ display: "flex", alignItems: "flex-end" }}
@@ -42,9 +43,12 @@ function SideBar() {
           {/* Hiển thị các mục cho admin */}
           {userRole === "admin" && (
             <>
-              <li className={`${pathname === "/user-management" ? "active" : ""}`}>
+              <li
+                className={`${pathname === "/user-management" ? "active" : ""}`}
+              >
                 <Link
-                  className={`nav-link ${pathname === "/user-management" ? "active" : ""}`}
+                  className={`nav-link ${pathname === "/user-management" ? "active" : ""
+                    }`}
                   to="/user-management"
                   style={{ display: "flex", alignItems: "flex-end" }}
                 >
@@ -53,15 +57,18 @@ function SideBar() {
                   <p style={{ fontSize: "14px" }}>Manage Users</p>
                 </Link>
               </li>
-              <li className={`${pathname === "/tour-management" ? "active" : ""}`}>
+              <li
+                className={`${pathname === "/tour-management" ? "active" : ""}`}
+              >
                 <Link
-                  className={`nav-link ${pathname === "/tour-management" ? "active" : ""}`}
+                  className={`nav-link ${pathname === "/tour-management" ? "active" : ""
+                    }`}
                   to="/tour-management"
                   style={{ display: "flex", alignItems: "flex-end" }}
                 >
                   <CiMap style={{ fontSize: "24px" }} />
                   &ensp;
-                  <p style={{ fontSize: "14px" }}>Manage Tours</p>
+                  <p style={{ fontSize: "14px" }}>Manage Hotels</p>
                 </Link>
               </li>
             </>
@@ -69,9 +76,13 @@ function SideBar() {
 
           {/* Hiển thị Manage Bookings cho cả admin và manager */}
           {(userRole === "admin" || userRole === "manager") && (
-            <li className={`${pathname === "/booking-management" ? "active" : ""}`}>
+            <li
+              className={`${pathname === "/booking-management" ? "active" : ""
+                }`}
+            >
               <Link
-                className={`nav-link ${pathname === "/booking-management" ? "active" : ""}`}
+                className={`nav-link ${pathname === "/booking-management" ? "active" : ""
+                  }`}
                 to="/booking-management"
                 style={{ display: "flex", alignItems: "flex-end" }}
               >
@@ -84,9 +95,13 @@ function SideBar() {
 
           {/* Hiển thị Manage Contacts chỉ cho admin */}
           {userRole === "admin" && (
-            <li className={`${pathname === "/contact-management" ? "active" : ""}`}>
+            <li
+              className={`${pathname === "/contact-management" ? "active" : ""
+                }`}
+            >
               <Link
-                className={`nav-link ${pathname === "/contact-management" ? "active" : ""}`}
+                className={`nav-link ${pathname === "/contact-management" ? "active" : ""
+                  }`}
                 to="/contact-management"
                 style={{ display: "flex", alignItems: "flex-end" }}
               >
@@ -98,9 +113,13 @@ function SideBar() {
           )}
           {/* Hiển thị Manage Locations chỉ cho admin */}
           {userRole === "admin" && (
-            <li className={`${pathname === "/location-management" ? "active" : ""}`}>
+            <li
+              className={`${pathname === "/location-management" ? "active" : ""
+                }`}
+            >
               <Link
-                className={`nav-link ${pathname === "/location-management" ? "active" : ""}`}
+                className={`nav-link ${pathname === "/location-management" ? "active" : ""
+                  }`}
                 to="/location-management"
                 style={{ display: "flex", alignItems: "flex-end" }}
               >
@@ -110,7 +129,41 @@ function SideBar() {
               </Link>
             </li>
           )}
+          {/* Hiển thị Manage Locations chỉ cho admin */}
+          {userRole === "admin" && (
+            <li
+              className={`${pathname === "/room-management" ? "active" : ""}`}
+            >
+              <Link
+                className={`nav-link ${pathname === "/room-management" ? "active" : ""
+                  }`}
+                to="/room-management"
+                style={{ display: "flex", alignItems: "flex-end" }}
+              >
+                <GrContact style={{ fontSize: "24px" }} />
+                &ensp;
+                <p style={{ fontSize: "14px" }}>Manage Room</p>
+              </Link>
+            </li>
+          )}
 
+          {/* Hiển thị Manage Locations chỉ cho admin */}
+          {userRole === "admin" && (
+            <li
+              className={`${pathname === "/extrafees-management" ? "active" : ""}`}
+            >
+              <Link
+                className={`nav-link ${pathname === "/extrafees-management" ? "active" : ""
+                  }`}
+                to="/extrafees-management"
+                style={{ display: "flex", alignItems: "flex-end" }}
+              >
+                <GrContact style={{ fontSize: "24px" }} />
+                &ensp;
+                <p style={{ fontSize: "14px" }}>Manage Extrafees</p>
+              </Link>
+            </li>
+          )}
           {/* Log out */}
           <li className={`${pathname === "/login" ? "active" : ""}`}>
             <Link

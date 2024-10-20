@@ -152,7 +152,7 @@ const TourDetails = () => {
                         </div>
                         {/* ============ Room Category Section START ============ */}
                         <div className="room-category-section mt-5">
-                           <h4>Room Categories</h4>
+                           <h4>Room in Hotel</h4>
                            <Row className="room-category-list">
                               {roomCategories.length > 0 ? (
                                  roomCategories.map((category, index) => (
@@ -165,7 +165,7 @@ const TourDetails = () => {
                                                 <br />
                                                 <strong>Max Occupancy: </strong>  {category.maxOccupancy} persons
                                                 <br />
-                                                <strong>Description: </strong> {category.description}
+                                                {/* <strong>Description: </strong> {category.description} */}
                                              </CardText>
                                           </CardBody>
                                        </Card>

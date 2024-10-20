@@ -10,7 +10,7 @@ import { AuthContext } from "../../context/AuthContext"; // Thêm AuthContext
 function SideBar() {
   const location = useLocation();
   const { pathname } = location;
-  
+
   // Lấy role người dùng từ AuthContext
   const { user } = useContext(AuthContext);
   const userRole = user?.role;
@@ -90,21 +90,21 @@ function SideBar() {
                 to="/contact-management"
                 style={{ display: "flex", alignItems: "flex-end" }}
               >
-                <GrContact style={{ fontSize: "24px" }} />  
+                <GrContact style={{ fontSize: "24px" }} />
                 &ensp;
                 <p style={{ fontSize: "14px" }}>Manage Contacts</p>
               </Link>
             </li>
           )}
-           {/* Hiển thị Manage Locations chỉ cho admin */}
-           {userRole === "admin" && (
+          {/* Hiển thị Manage Locations chỉ cho admin */}
+          {userRole === "admin" && (
             <li className={`${pathname === "/location-management" ? "active" : ""}`}>
               <Link
                 className={`nav-link ${pathname === "/location-management" ? "active" : ""}`}
                 to="/location-management"
                 style={{ display: "flex", alignItems: "flex-end" }}
               >
-                <GrContact style={{ fontSize: "24px" }} />  
+                <GrContact style={{ fontSize: "24px" }} />
                 &ensp;
                 <p style={{ fontSize: "14px" }}>Manage Locations</p>
               </Link>

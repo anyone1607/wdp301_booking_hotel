@@ -76,7 +76,7 @@ const Routers = () => {
         <Route path="/cancel" element={<PaymentCancel />} />
 
         {/* Location router */}
-        
+
         <Route path="/location" element={<Location />}></Route>
         <Route path="/tours/city/:city" element={<TourList />} />
 
@@ -151,7 +151,7 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<LocationManagement />}
-                // allowedRoles={["admin"]}
+              // allowedRoles={["admin"]}
               />
             }
           />

@@ -72,7 +72,7 @@ const MyBookings = () => {
     };
 
     const handleShowDetails = async (booking) => {
-        const hotelId = booking.hotelId; 
+        const hotelId = booking.hotelId;
         const restaurantId = booking.restaurantId;
 
         try {
@@ -99,7 +99,7 @@ const MyBookings = () => {
             const response = await axios.post(
                 `${BASE_URL}/payment/create-payment-link`,
                 {
-                    amount: booking.price,
+                    amount: booking.totalAmount,
                     bookingId: booking._id,
                 },
                 { withCredentials: true }

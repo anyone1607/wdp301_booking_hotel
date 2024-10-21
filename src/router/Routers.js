@@ -81,7 +81,7 @@ const Routers = () => {
         <Route path="/my-booking" element={<MyBookings />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/deals" element={<Promotion />} />
-        <Route path="/success" element={<PaymentSuccess />} />
+        <Route path="/successed/:bookingId" element={<PaymentSuccess />} />
         <Route path="/cancel" element={<PaymentCancel />} />
 
         {/* Location router */}

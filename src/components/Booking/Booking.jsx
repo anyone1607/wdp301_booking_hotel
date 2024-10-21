@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { BASE_URL } from '../../utils/config';
 import axios from 'axios';
+import Swal from "sweetalert2";
 
 const Booking = ({ tour, avgRating }) => {
    const { price, reviews, title } = tour;
@@ -30,7 +31,7 @@ const Booking = ({ tour, avgRating }) => {
       const day = date.getDate().toString().padStart(2, '0');
       return `${year}-${month}-${day}`;
    };
-
+   const [booked, setBooked] = useState([]);
    const [booking, setBooking] = useState({
       userId: user ? user._id : null,
       roomIds: [],
@@ -187,9 +188,42 @@ const Booking = ({ tour, avgRating }) => {
 
       return total;
    };
+   const handlePayment = async (booking) => {
+      console.log(booking._id)
+      try {
+         const response = await axios.post(
+            `${BASE_URL}/payment/create-payment-link`,
+            {
+               amount: booking.totalAmount,
+               bookingId: booking._id,
+            },
+            { withCredentials: true }
+         );
 
+         if (response.status === 200) {
+            const { checkoutUrl } = response.data;
+            Swal.fire({
+               icon: "info",
+               title: "Redirecting to Payment",
+               text: "You will be redirected to the payment page.",
+               showConfirmButton: false,
+               timer: 2000,
+            });
+            window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+         } else {
+            console.error("Failed to create payment link");
+         }
+      } catch (error) {
+         console.error("Error creating payment link:", error);
+         Swal.fire({
+            icon: "error",
+            title: "Payment Link Error",
+            text: "There was an error creating the payment link. Please try again.",
+         });
+      }
+   };
 
-   const handleClick = async e => {
+   const handleClick = async (e) => {
       e.preventDefault();
 
       if (validateBeforeSubmit()) {
@@ -200,39 +234,39 @@ const Booking = ({ tour, avgRating }) => {
 
             const totalAmount = calculateTotalAmount();
             let roomIds = [];
+
             Object.entries(selectedRooms).forEach(([roomId, quantity]) => {
                for (let i = 0; i < quantity; i++) {
                   roomIds.push(roomId);
                }
             });
 
-            const res = await fetch(`${BASE_URL}/booking`, {
-               method: 'POST',
-               headers: {
-                  'Content-Type': 'application/json'
-               },
-               credentials: 'include',
-               body: JSON.stringify({
-                  ...booking,
-                  hotelId,
-                  roomIds,
-                  extraIds: selectedExtras,
-                  totalAmount
-               })
-            });
+            // Tạo biến bookingTemp để lưu giá trị booking
+            const bookingTemp = {
+               ...booking,
+               hotelId,          // Cập nhật hotelId
+               roomIds,          // Cập nhật roomIds
+               extraIds: selectedExtras,  // Cập nhật extraIds bằng selectedExtras
+               totalAmount       // Cập nhật tổng số tiền
+            };
 
-            const result = await res.json();
+            // Gửi request với bookingTemp
 
-            if (!res.ok) {
-               return alert(result.message);
-            }
+            const res = await axios.post(`${BASE_URL}/booking`, bookingTemp);
+            const result = res.data.data;
+
+
+            console.log(result)
+            // Điều hướng sau khi tạo booking thành công
             // navigate('/thank-you');
-            navigate('/my-booking');
+            // navigate('/my-booking');
+            handlePayment(result);
          } catch (error) {
             alert(error.message);
          }
       }
    };
+
 
    const validateBeforeSubmit = () => {
       if (booking.adult < 1) {

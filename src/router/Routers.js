@@ -81,11 +81,11 @@ const Routers = () => {
         <Route path="/my-booking" element={<MyBookings />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/deals" element={<Promotion />} />
-        <Route path="/success" element={<PaymentSuccess />} />
+        <Route path="/successed/:bookingId" element={<PaymentSuccess />} />
         <Route path="/cancel" element={<PaymentCancel />} />
 
         {/* Location router */}
-        
+
         <Route path="/location" element={<Location />}></Route>
         <Route path="/tours/city/:city" element={<TourList />} />
 
@@ -145,7 +145,7 @@ const Routers = () => {
               />
             }
           />
-           <Route
+          <Route
             path="/update-room/:id"
             element={
               <ProtectedRoute
@@ -163,7 +163,7 @@ const Routers = () => {
               />
             }
           />
-           <Route
+          <Route
             path="/create-extrafee"
             element={
               <ProtectedRoute
@@ -181,7 +181,7 @@ const Routers = () => {
               />
             }
           />
-             <Route
+          <Route
             path="/update-extrafee/:id"
             element={
               <ProtectedRoute
@@ -205,25 +205,25 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<LocationManagement />}
-                // allowedRoles={["admin"]}
+              // allowedRoles={["admin"]}
               />
             }
           />
-           <Route
+          <Route
             path="/room-management"
             element={
               <ProtectedRoute
                 element={<RoomManagement />}
-                // allowedRoles={["admin"]}
+              // allowedRoles={["admin"]}
               />
             }
           />
-           <Route
+          <Route
             path="/extrafees-management"
             element={
               <ProtectedRoute
                 element={<ExtrafeesManagement />}
-                // allowedRoles={["admin"]}
+              // allowedRoles={["admin"]}
               />
             }
           />

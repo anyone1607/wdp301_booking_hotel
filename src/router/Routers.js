@@ -38,6 +38,8 @@ import UpdateRoom from "../pages/admin/UpdateRoom";
 import ExtrafeesManagement from "../pages/admin/ExtrafeesManagement";
 import CreateExtrafees from "../pages/admin/CreateExtrafees";
 import UpdateExtrafees from "../pages/admin/UpdateExtrafees";
+import PaymentSuccessAdmin from "../pages/admin/SuccessAdmin";
+import PaymentCancelAdmin from "../pages/admin/CancelAdmin";
 const Routers = () => {
   const { user } = useContext(AuthContext);
   const isAdminOrManager =
@@ -223,6 +225,24 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<ExtrafeesManagement />}
+              // allowedRoles={["admin"]}
+              />
+            }
+          />
+          <Route
+            path="/successedAdmin/:bookingId"
+            element={
+              <ProtectedRoute
+                element={<PaymentSuccessAdmin />}
+              // allowedRoles={["admin"]}
+              />
+            }
+          />
+          <Route
+            path="/cancelAdmin"
+            element={
+              <ProtectedRoute
+                element={<PaymentCancelAdmin />}
               // allowedRoles={["admin"]}
               />
             }

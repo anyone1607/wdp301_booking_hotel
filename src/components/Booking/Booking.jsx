@@ -189,13 +189,14 @@ const Booking = ({ tour, avgRating }) => {
       return total;
    };
    const handlePayment = async (booking) => {
-      console.log(booking._id)
+      console.log(booking._id, user.role)
       try {
          const response = await axios.post(
             `${BASE_URL}/payment/create-payment-link`,
             {
                amount: booking.totalAmount,
                bookingId: booking._id,
+               role: user.role
             },
             { withCredentials: true }
          );

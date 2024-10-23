@@ -1,71 +1,16 @@
 import { useEffect, useState } from "react";
 import TableBooking from "../../components/TableBooking/table";
 import BookingModal from "../../components/BookingModal";
-import { Button } from "react-bootstrap";
+import Booking from "../../components/Booking/Booking";
+import { Button, Form } from "react-bootstrap";
 import axios from "axios";
 
 function BookingManagement() {
-    const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [bookings, setBookings] = useState([]);
     const [showModal, setShowModal] = useState(false);
-    const [formData, setFormData] = useState({
-        userId: "",
-        userEmail: "",
-        tourName: "",
-        fullName: "",
-        adult: 0,
-        children: 0,
-        baby: 0,
-        guestSize: 0,
-        phone: "",
-        bookAt: "",
-        hotel: "",
-        extraBed: 0,
-        roomQuantity: 0,
-        restaurant: "",
-        amount: 0, // Thêm trường amount
-    });
-    const [editingBooking, setEditingBooking] = useState(null);
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        const token = localStorage.getItem("accessToken");
-
-        try {
-            const url = editingBooking
-                ? `http://localhost:8000/api/v1/payment/${editingBooking._id}`
-                : "http://localhost:8000/api/v1/payment"; // Cập nhật URL
-
-            const response = await axios.post(url, {
-                bookingId: editingBooking ? editingBooking._id : null, // Nếu có đang chỉnh sửa, gửi bookingId
-                amount: formData.amount, // Gửi amount
-                ...formData, // Gửi các thông tin khác
-            }, {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            // Cập nhật bookings sau khi thanh toán thành công
-            if (editingBooking) {
-                setBookings(
-                    bookings.map((booking) =>
-                        booking._id === editingBooking._id ? response.data.payment : booking
-                    )
-                );
-            } else {
-                setBookings([...bookings, response.data.payment]);
-            }
-
-            // Reset form
-            resetFormData();
-            setEditingBooking(null);
-            setShowModal(false);
-        } catch (error) {
-            console.error("Error submitting form:", error);
-        }
-    };
+    const [hotels, setHotels] = useState([]);
+    const [selectHotels, setSelectHotels] = useState(null);  // Changed to hold a single selected hotel
 
     const handleDelete = async (id) => {
         const token = localStorage.getItem("accessToken");
@@ -81,31 +26,7 @@ function BookingManagement() {
         }
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
-
-    const resetFormData = () => {
-        setFormData({
-            userId: "",
-            userEmail: "",
-            tourName: "",
-            fullName: "",
-            adult: 0,
-            children: 0,
-            baby: 0,
-            guestSize: 0,
-            phone: "",
-            bookAt: "",
-            hotel: "",
-            extraBed: 0,
-            roomQuantity: 0,
-            restaurant: "",
-            amount: 0, // Reset amount
-        });
-    };
-
+    // Fetch bookings
     useEffect(() => {
         const fetchData = async () => {
             const token = localStorage.getItem("accessToken");
@@ -126,6 +47,34 @@ function BookingManagement() {
         fetchData();
     }, []);
 
+    // Fetch hotels/tours
+    useEffect(() => {
+        const fetchData = async () => {
+            const token = localStorage.getItem("accessToken");
+            try {
+                const response = await axios.get("http://localhost:8000/api/v1/tours", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setHotels(response.data.data);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching tours:", error);
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    // Handle hotel selection
+    const handleHotelSelect = (e) => {
+        const selectedHotelId = e.target.value;
+        const selectedHotel = hotels.find(hotel => hotel._id === selectedHotelId);
+        setSelectHotels(selectedHotel);  // Set selected hotel data
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -137,18 +86,22 @@ function BookingManagement() {
                 data={bookings}
                 handleDelete={handleDelete}
             />
-            <Button onClick={() => setShowModal(true)}>Add Booking</Button>
-            <BookingModal
-                show={showModal}
-                handleClose={() => {
-                    setShowModal(false);
-                    resetFormData();
-                }}
-                handleSubmit={handleSubmit}
-                formData={formData}
-                handleInputChange={handleInputChange}
-                editingBooking={editingBooking}
-            />
+
+            {/* Hotel Selection Dropdown */}
+            <Form.Group controlId="selectHotel">
+                <Form.Label><strong>Select a hotel for Booking</strong></Form.Label>
+                <Form.Control as="select" onChange={handleHotelSelect}>
+                    <option value="">Select a hotel for Booking</option>
+                    {hotels.map(hotel => (
+                        <option key={hotel._id} value={hotel._id}>
+                            {hotel.title}
+                        </option>
+                    ))}
+                </Form.Control>
+            </Form.Group>
+
+            {/* Pass selected hotel to Booking component */}
+            {selectHotels && <Booking tour={selectHotels} avgRating={selectHotels.avgRating} />}
         </div>
     );
 }

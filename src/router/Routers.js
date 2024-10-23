@@ -38,6 +38,8 @@ import UpdateRoom from "../pages/admin/UpdateRoom";
 import ExtrafeesManagement from "../pages/admin/ExtrafeesManagement";
 import CreateExtrafees from "../pages/admin/CreateExtrafees";
 import UpdateExtrafees from "../pages/admin/UpdateExtrafees";
+import PaymentSuccessAdmin from "../pages/admin/SuccessAdmin";
+import PaymentCancelAdmin from "../pages/admin/CancelAdmin";
 const Routers = () => {
   const { user } = useContext(AuthContext);
   const isAdminOrManager =
@@ -81,11 +83,11 @@ const Routers = () => {
         <Route path="/my-booking" element={<MyBookings />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/deals" element={<Promotion />} />
-        <Route path="/success" element={<PaymentSuccess />} />
+        <Route path="/successed/:bookingId" element={<PaymentSuccess />} />
         <Route path="/cancel" element={<PaymentCancel />} />
 
         {/* Location router */}
-        
+
         <Route path="/location" element={<Location />}></Route>
         <Route path="/tours/city/:city" element={<TourList />} />
 
@@ -145,7 +147,7 @@ const Routers = () => {
               />
             }
           />
-           <Route
+          <Route
             path="/update-room/:id"
             element={
               <ProtectedRoute
@@ -163,7 +165,7 @@ const Routers = () => {
               />
             }
           />
-           <Route
+          <Route
             path="/create-extrafee"
             element={
               <ProtectedRoute
@@ -181,7 +183,7 @@ const Routers = () => {
               />
             }
           />
-             <Route
+          <Route
             path="/update-extrafee/:id"
             element={
               <ProtectedRoute
@@ -205,25 +207,43 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<LocationManagement />}
-                // allowedRoles={["admin"]}
+              // allowedRoles={["admin"]}
               />
             }
           />
-           <Route
+          <Route
             path="/room-management"
             element={
               <ProtectedRoute
                 element={<RoomManagement />}
-                // allowedRoles={["admin"]}
+              // allowedRoles={["admin"]}
               />
             }
           />
-           <Route
+          <Route
             path="/extrafees-management"
             element={
               <ProtectedRoute
                 element={<ExtrafeesManagement />}
-                // allowedRoles={["admin"]}
+              // allowedRoles={["admin"]}
+              />
+            }
+          />
+          <Route
+            path="/successedAdmin/:bookingId"
+            element={
+              <ProtectedRoute
+                element={<PaymentSuccessAdmin />}
+              // allowedRoles={["admin"]}
+              />
+            }
+          />
+          <Route
+            path="/cancelAdmin"
+            element={
+              <ProtectedRoute
+                element={<PaymentCancelAdmin />}
+              // allowedRoles={["admin"]}
               />
             }
           />

@@ -28,9 +28,8 @@ function SideBar() {
           {userRole === "admin" && (
             <li className={`${pathname === "/dashboard" ? "active" : ""}`}>
               <Link
-                className={`nav-link ${
-                  pathname === "/dashboard" ? "active" : ""
-                }`}
+                className={`nav-link ${pathname === "/dashboard" ? "active" : ""
+                  }`}
                 to="/dashboard"
                 aria-current="page"
                 style={{ display: "flex", alignItems: "flex-end" }}
@@ -48,9 +47,8 @@ function SideBar() {
                 className={`${pathname === "/user-management" ? "active" : ""}`}
               >
                 <Link
-                  className={`nav-link ${
-                    pathname === "/user-management" ? "active" : ""
-                  }`}
+                  className={`nav-link ${pathname === "/user-management" ? "active" : ""
+                    }`}
                   to="/user-management"
                   style={{ display: "flex", alignItems: "flex-end" }}
                 >
@@ -63,9 +61,8 @@ function SideBar() {
                 className={`${pathname === "/tour-management" ? "active" : ""}`}
               >
                 <Link
-                  className={`nav-link ${
-                    pathname === "/tour-management" ? "active" : ""
-                  }`}
+                  className={`nav-link ${pathname === "/tour-management" ? "active" : ""
+                    }`}
                   to="/tour-management"
                   style={{ display: "flex", alignItems: "flex-end" }}
                 >
@@ -80,14 +77,12 @@ function SideBar() {
           {/* Hiển thị Manage Bookings cho cả admin và manager */}
           {(userRole === "admin" || userRole === "manager") && (
             <li
-              className={`${
-                pathname === "/booking-management" ? "active" : ""
-              }`}
+              className={`${pathname === "/booking-management" ? "active" : ""
+                }`}
             >
               <Link
-                className={`nav-link ${
-                  pathname === "/booking-management" ? "active" : ""
-                }`}
+                className={`nav-link ${pathname === "/booking-management" ? "active" : ""
+                  }`}
                 to="/booking-management"
                 style={{ display: "flex", alignItems: "flex-end" }}
               >
@@ -101,14 +96,12 @@ function SideBar() {
           {/* Hiển thị Manage Contacts chỉ cho admin */}
           {userRole === "admin" && (
             <li
-              className={`${
-                pathname === "/contact-management" ? "active" : ""
-              }`}
+              className={`${pathname === "/contact-management" ? "active" : ""
+                }`}
             >
               <Link
-                className={`nav-link ${
-                  pathname === "/contact-management" ? "active" : ""
-                }`}
+                className={`nav-link ${pathname === "/contact-management" ? "active" : ""
+                  }`}
                 to="/contact-management"
                 style={{ display: "flex", alignItems: "flex-end" }}
               >
@@ -121,14 +114,12 @@ function SideBar() {
           {/* Hiển thị Manage Locations chỉ cho admin */}
           {userRole === "admin" && (
             <li
-              className={`${
-                pathname === "/location-management" ? "active" : ""
-              }`}
+              className={`${pathname === "/location-management" ? "active" : ""
+                }`}
             >
               <Link
-                className={`nav-link ${
-                  pathname === "/location-management" ? "active" : ""
-                }`}
+                className={`nav-link ${pathname === "/location-management" ? "active" : ""
+                  }`}
                 to="/location-management"
                 style={{ display: "flex", alignItems: "flex-end" }}
               >
@@ -144,9 +135,8 @@ function SideBar() {
               className={`${pathname === "/room-management" ? "active" : ""}`}
             >
               <Link
-                className={`nav-link ${
-                  pathname === "/room-management" ? "active" : ""
-                }`}
+                className={`nav-link ${pathname === "/room-management" ? "active" : ""
+                  }`}
                 to="/room-management"
                 style={{ display: "flex", alignItems: "flex-end" }}
               >
@@ -163,9 +153,8 @@ function SideBar() {
               className={`${pathname === "/extrafees-management" ? "active" : ""}`}
             >
               <Link
-                className={`nav-link ${
-                  pathname === "/extrafees-management" ? "active" : ""
-                }`}
+                className={`nav-link ${pathname === "/extrafees-management" ? "active" : ""
+                  }`}
                 to="/extrafees-management"
                 style={{ display: "flex", alignItems: "flex-end" }}
               >

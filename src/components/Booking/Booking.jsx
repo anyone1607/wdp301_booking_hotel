@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { BASE_URL } from '../../utils/config';
 import axios from 'axios';
+import Swal from "sweetalert2";
 
 const Booking = ({ tour, avgRating }) => {
    const { price, reviews, title } = tour;
@@ -16,6 +17,7 @@ const Booking = ({ tour, avgRating }) => {
    const [availableRoomCounts, setAvailableRoomCounts] = useState([]);
 
    const hotelId = tour._id;
+
    const navigate = useNavigate();
    const { user } = useContext(AuthContext);
 
@@ -29,13 +31,14 @@ const Booking = ({ tour, avgRating }) => {
       const day = date.getDate().toString().padStart(2, '0');
       return `${year}-${month}-${day}`;
    };
-
+   const [booked, setBooked] = useState([]);
    const [booking, setBooking] = useState({
       userId: user ? user._id : null,
       roomIds: [],
       extraIds: [],
       name: '',
       phone: '',
+      email: '', // Add email field here
       adult: 1,
       children: 0,
       baby: 0,
@@ -52,8 +55,7 @@ const Booking = ({ tour, avgRating }) => {
       bookAt: '',
       checkOut: '',
       roomQuantity: '',
-      name: '',
-      phone: '',
+      email: '' // Add email validation error here
    });
 
    useEffect(() => {
@@ -71,14 +73,14 @@ const Booking = ({ tour, avgRating }) => {
             setExtraFee(responseET.data.data);
             setAvailableRoomCounts(responseAvailability.data.availableRooms);
          } catch (error) {
-            console.error("Lỗi khi lấy dữ liệu:", error.response ? error.response.data : error.message);
+            console.error("Lỗi khi lấy dữ liệu:", error);
          }
       };
 
       fetchData();
    }, [hotelId, booking.bookAt, booking.checkOut]);
 
-   const handleChange = (e) => {
+   const handleChange = e => {
       const { id, value } = e.target;
       const today = new Date();
       const selectedDate = new Date(value);
@@ -86,6 +88,15 @@ const Booking = ({ tour, avgRating }) => {
       const checkOutDate = new Date(booking.checkOut);
 
       setBooking(prev => ({ ...prev, [id]: value }));
+
+      if (id === 'email') {
+         const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+         if (!emailPattern.test(value)) {
+            setErrors(prev => ({ ...prev, email: 'Email không hợp lệ.' }));
+         } else {
+            setErrors(prev => ({ ...prev, email: '' }));
+         }
+      }
 
       // Validation for date fields
       if (id === 'bookAt') {
@@ -109,9 +120,9 @@ const Booking = ({ tour, avgRating }) => {
       if (id === 'name') {
          const namePattern = /^[a-zA-ZÀ-ỹ\s]+$/u; // Full name should only contain letters and spaces
          if (!namePattern.test(value)) {
-            setErrors(prev => ({ ...prev, name: 'Tên phải chỉ chứa chữ cái và khoảng trắng.' }));
+            setErrors(prev => ({ ...prev, name: 'Full name must contain only letters and spaces.' }));
          } else if (value.trim().length < 3) {
-            setErrors(prev => ({ ...prev, name: 'Tên phải có ít nhất 3 ký tự.' }));
+            setErrors(prev => ({ ...prev, name: 'Full name must be at least 3 characters long.' }));
          } else {
             setErrors(prev => ({ ...prev, name: '' }));
          }
@@ -120,7 +131,7 @@ const Booking = ({ tour, avgRating }) => {
       if (id === 'phone') {
          const phonePattern = /^0\d{9}$/; // Vietnamese phone number format
          if (!phonePattern.test(value)) {
-            setErrors(prev => ({ ...prev, phone: 'Số điện thoại phải bắt đầu bằng 0 và có 10 chữ số.' }));
+            setErrors(prev => ({ ...prev, phone: 'Phone number must start with 0 and have 10 digits.' }));
          } else {
             setErrors(prev => ({ ...prev, phone: '' }));
          }
@@ -134,6 +145,7 @@ const Booking = ({ tour, avgRating }) => {
          }
       }
    };
+
 
    const handleSelectRoomChange = (roomId, quantity) => {
       const parsedQuantity = parseInt(quantity, 10);
@@ -154,6 +166,7 @@ const Booking = ({ tour, avgRating }) => {
    };
 
    const calculateTotalAmount = () => {
+      // Tính số đêm giữa checkOut và bookAt
       const checkInDate = new Date(booking.bookAt);
       const checkOutDate = new Date(booking.checkOut);
       const diffTime = Math.abs(checkOutDate - checkInDate);
@@ -175,6 +188,41 @@ const Booking = ({ tour, avgRating }) => {
 
       return total;
    };
+   const handlePayment = async (booking) => {
+      console.log(booking._id, user.role)
+      try {
+         const response = await axios.post(
+            `${BASE_URL}/payment/create-payment-link`,
+            {
+               amount: booking.totalAmount,
+               bookingId: booking._id,
+               role: user.role
+            },
+            { withCredentials: true }
+         );
+
+         if (response.status === 200) {
+            const { checkoutUrl } = response.data;
+            Swal.fire({
+               icon: "info",
+               title: "Redirecting to Payment",
+               text: "You will be redirected to the payment page.",
+               showConfirmButton: false,
+               timer: 2000,
+            });
+            window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+         } else {
+            console.error("Failed to create payment link");
+         }
+      } catch (error) {
+         console.error("Error creating payment link:", error);
+         Swal.fire({
+            icon: "error",
+            title: "Payment Link Error",
+            text: "There was an error creating the payment link. Please try again.",
+         });
+      }
+   };
 
    const handleClick = async (e) => {
       e.preventDefault();
@@ -187,47 +235,47 @@ const Booking = ({ tour, avgRating }) => {
 
             const totalAmount = calculateTotalAmount();
             let roomIds = [];
+
             Object.entries(selectedRooms).forEach(([roomId, quantity]) => {
                for (let i = 0; i < quantity; i++) {
                   roomIds.push(roomId);
                }
             });
 
-            const res = await fetch(`${BASE_URL}/booking`, {
-               method: 'POST',
-               headers: {
-                  'Content-Type': 'application/json'
-               },
-               credentials: 'include',
-               body: JSON.stringify({
-                  ...booking,
-                  hotelId,
-                  roomIds,
-                  extraIds: selectedExtras,
-                  totalAmount
-               })
-            });
+            // Tạo biến bookingTemp để lưu giá trị booking
+            const bookingTemp = {
+               ...booking,
+               hotelId,          // Cập nhật hotelId
+               roomIds,          // Cập nhật roomIds
+               extraIds: selectedExtras,  // Cập nhật extraIds bằng selectedExtras
+               totalAmount       // Cập nhật tổng số tiền
+            };
 
-            const result = await res.json();
+            // Gửi request với bookingTemp
 
-            if (!res.ok) {
-               return alert(result.message);
-            }
+            const res = await axios.post(`${BASE_URL}/booking`, bookingTemp);
+            const result = res.data.data;
 
-            navigate('/my-booking');
+
+            console.log(result)
+            // Điều hướng sau khi tạo booking thành công
+            // navigate('/thank-you');
+            // navigate('/my-booking');
+            handlePayment(result);
          } catch (error) {
             alert(error.message);
          }
       }
    };
 
+
    const validateBeforeSubmit = () => {
       if (booking.adult < 1) {
-         alert('Phải có ít nhất một người lớn.');
+         alert('At least one adult must be included.');
          return false;
       }
       if (!booking.bookAt || !booking.checkOut) {
-         alert('Vui lòng chọn ngày đặt và ngày trả.');
+         alert('Please select booking and check-out dates.');
          return false;
       }
       return true;
@@ -236,7 +284,7 @@ const Booking = ({ tour, avgRating }) => {
    return (
       <div className='booking'>
          <div className="booking__top d-flex align-items-center justify-content-between">
-            <h3>{title}</h3>
+            <h3>{title} </h3>
             <span className="tour__rating d-flex align-items-center">
                <i className='ri-star-fill' style={{ color: 'var(--secondary-color)' }}></i>
                {avgRating === 0 ? null : avgRating} ({reviews?.length})
@@ -244,76 +292,131 @@ const Booking = ({ tour, avgRating }) => {
          </div>
 
          <div className="booking__form">
-            <h5>Thông tin</h5>
+            <h5>Information</h5>
             <Form className='booking__info-form' onSubmit={handleClick}>
+               <FormGroup>
+                  <input type="text" placeholder='Full Name' id='name' required onChange={handleChange} />
+                  {errors.name && <span className="error">{errors.name}</span>}
+               </FormGroup>
+
+               <FormGroup>
+                  <input type="tel" placeholder='Phone' id='phone' required onChange={handleChange} />
+                  {errors.phone && <span className="error">{errors.phone}</span>}
+               </FormGroup>
+
+               <FormGroup>
+                  <input type="email" placeholder='Email' id='email' required onChange={handleChange} />
+                  {errors.email && <span className="error">{errors.email}</span>}
+               </FormGroup>
+
+               <FormGroup>
+                  <Row>
+                     <Col className="d-flex align-items-center justify-content-evenly">
+                        <strong>Adult</strong>
+                        <input className='m-0 w-50' type="number" id='adult' value={booking.adult} onChange={handleChange} min="1" required />
+                     </Col>
+                     <Col className="d-flex align-items-center justify-content-evenly">
+
+                        <strong>Children </strong>
+                        <input className='m-0 w-50' type="number" id='children' value={booking.children} onChange={handleChange} min="0" />
+                     </Col>
+                     <Col className="d-flex align-items-center justify-content-evenly">
+
+                        <strong>Baby </strong>
+                        <input className='m-0 w-50' type="number" id='baby' value={booking.baby} onChange={handleChange} min="0" />
+                     </Col>
+                  </Row>
+
+                  {errors.adult && <span className="error">{errors.adult}</span>}
+                  {errors.children && <span className="error">{errors.children}</span>}
+                  {errors.baby && <span className="error">{errors.baby}</span>}
+               </FormGroup>
                <Row>
-                  <Col md="6">
-                     <FormGroup>
-                        <input type="text" placeholder='Họ và tên' id="name" value={booking.name} onChange={handleChange} />
-                        {errors.name && <span className='error'>{errors.name}</span>}
+                  <Col>
+                     <FormGroup className="d-flex align-items-center justify-content-evenly">
+                        <strong>BookAt</strong>
+                        <input
+                           className='m-0 w-50'
+                           type="date"
+                           id="bookAt"
+                           onChange={handleChange}
+                           required
+                           defaultValue={booking.bookAt}
+                        />
+
                      </FormGroup>
+
                   </Col>
-                  <Col md="6">
-                     <FormGroup>
-                        <input type="text" placeholder='Số điện thoại' id="phone" value={booking.phone} onChange={handleChange} />
-                        {errors.phone && <span className='error'>{errors.phone}</span>}
+                  <Col>
+                     <FormGroup className="d-flex align-items-center justify-content-evenly">
+                        <strong>CheckOut</strong>
+                        <input
+                           className='m-0 w-50'
+                           type="date"
+                           id="checkOut"
+                           onChange={handleChange}
+                           required
+                           defaultValue={booking.checkOut}
+                        />
+
                      </FormGroup>
+
                   </Col>
-               </Row>
-               <Row>
-                  <Col md="4">
-                     <FormGroup>
-                        <input type="number" min="1" id="adult" placeholder='Người lớn' value={booking.adult} onChange={handleChange} />
-                        {errors.adult && <span className='error'>{errors.adult}</span>}
-                     </FormGroup>
-                  </Col>
-                  <Col md="4">
-                     <FormGroup>
-                        <input type="number" min="0" id="children" placeholder='Trẻ em' value={booking.children} onChange={handleChange} />
-                        {errors.children && <span className='error'>{errors.children}</span>}
-                     </FormGroup>
-                  </Col>
-                  <Col md="4">
-                     <FormGroup>
-                        <input type="number" min="0" id="baby" placeholder='Em bé' value={booking.baby} onChange={handleChange} />
-                        {errors.baby && <span className='error'>{errors.baby}</span>}
-                     </FormGroup>
-                  </Col>
-               </Row>
-               <Row>
-                  <Col md="6">
-                     <FormGroup>
-                        <input type="date" id="bookAt" value={booking.bookAt} onChange={handleChange} min={formatDate(today)} />
-                        {errors.bookAt && <span className='error'>{errors.bookAt}</span>}
-                     </FormGroup>
-                  </Col>
-                  <Col md="6">
-                     <FormGroup>
-                        <input type="date" id="checkOut" value={booking.checkOut} onChange={handleChange} min={formatDate(tomorrow)} />
-                        {errors.checkOut && <span className='error'>{errors.checkOut}</span>}
-                     </FormGroup>
-                  </Col>
+                  {errors.bookAt && <span className="error text-danger">{errors.bookAt}</span>}
+                  {errors.checkOut && <span className="error text-danger">{errors.checkOut}</span>}
                </Row>
 
-               <h5>Chọn phòng</h5>
-               {roomCategories.map((room) => (
-                  <FormGroup key={room._id}>
-                     <div className='room'>
-                        <h6>{room.roomName} - {room.roomPrice} VND/đêm</h6>
-                        <input type="number" min="0" placeholder='Số lượng' onChange={(e) => handleSelectRoomChange(room._id, e.target.value)} />
+               <FormGroup>
+                  <h6>Chọn Phòng</h6>
+                  {roomCategories.length > 0 && roomCategories.map(room => {
+                     const availableRoomCount = availableRoomCounts.find(rc => rc.roomId === room._id)?.availableCount || 0;
+                     return (
+                        <div key={room._id} className="d-flex align-items-center justify-content-around">
+                           <label>
+                              {room.roomName} - ${room.roomPrice}
+                              <span style={{ marginLeft: '10px', fontStyle: 'italic', color: 'gray' }}>
+                                 (Còn lại: {availableRoomCount} phòng)
+                              </span>
+                           </label>
+
+                           {/* Kiểm tra nếu số phòng còn lại là 0, hiển thị thông báo "Hết phòng" */}
+                           {availableRoomCount === 0 ? (
+                              <span className="text-danger">Hết phòng</span>
+                           ) : (
+                              <input
+                                 className='m-0 w-25'
+                                 type="number"
+                                 min="0"
+                                 max={availableRoomCount}
+                                 placeholder="Số lượng"
+                                 onChange={(e) => handleSelectRoomChange(room._id, e.target.value)}
+                              />
+                           )}
+                        </div>
+                     );
+                  })}
+               </FormGroup>
+
+               <FormGroup>
+                  <h6>Chọn dịch vụ thêm</h6>
+                  {extraFee.length > 0 && extraFee.map(fee => (
+                     <div key={fee._id}>
+                        <label className="d-flex align-items-center">
+                           <input
+                              className='m-0'
+                              style={{ width: '25px' }}
+                              type="checkbox"
+                              onChange={(e) => handleExtraFeeChange(fee._id, e.target.checked)}
+                           />
+                           <span>{fee.extraName} - ${fee.extraPrice}</span>
+                        </label>
                      </div>
-                  </FormGroup>
-               ))}
-
-               <h5>Dịch vụ thêm</h5>
-               {extraFee.map((fee) => (
-                  <FormGroup key={fee._id}>
-                     <input type="checkbox" id={fee._id} onChange={(e) => handleExtraFeeChange(fee._id, e.target.checked)} />
-                     <label htmlFor={fee._id}>{fee.extraName} - {fee.extraPrice} VND</label>
-                  </FormGroup>
-               ))}
-
-               <Button type='submit'>Đặt phòng</Button>
+                  ))}
+               </FormGroup>
+               <FormGroup>
+                  <h6>Tổng số tiền: ${calculateTotalAmount()}</h6>
+               </FormGroup>
+               <Button type='submit' color='primary' className='btn primary__btn w-100 mt-4'>Book Now</Button>
             </Form>
          </div>
       </div>

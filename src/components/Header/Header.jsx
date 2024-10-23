@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useContext } from "react";
-import { Container, Row, Button } from "react-bootstrap";
+import { Container, Row, Button, Image } from "react-bootstrap";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import Logo from "../../assets/images/logo.png";
 import "./header.css";
@@ -8,7 +8,7 @@ import { FaUserCircle } from "react-icons/fa"; // Import icon profile
 
 const nav__links = [
   { path: "/home", display: "Home" },
-  { path: "/location", display: "Location" },
+  { path: "/tours", display: "Tours" },
   { path: "/about", display: "About" },
   { path: "/deals", display: "Promotion" },
   { path: "/contact", display: "Contact" },
@@ -26,35 +26,27 @@ const Header = () => {
   };
 
   const stickyHeaderFunc = () => {
-    if (headerRef.current) {
-      const handleScroll = () => {
-        if (
-          document.body.scrollTop > 80 ||
-          document.documentElement.scrollTop > 80
-        ) {
-          headerRef.current.classList.add("sticky__header");
-        } else {
-          headerRef.current.classList.remove("sticky__header");
-        }
-      };
-
-      window.addEventListener("scroll", handleScroll);
-      return () => {
-        window.removeEventListener("scroll", handleScroll);
-      };
-    }
+    window.addEventListener("scroll", () => {
+      if (
+        document.body.scrollTop > 80 ||
+        document.documentElement.scrollTop > 80
+      ) {
+        headerRef.current.classList.add("sticky__header");
+      } else {
+        headerRef.current.classList.remove("sticky__header");
+      }
+    });
   };
 
   useEffect(() => {
-    const cleanup = stickyHeaderFunc();
-    return cleanup; // Đảm bảo rằng bạn dọn dẹp event listener khi component bị hủy
+    stickyHeaderFunc();
+
+    return () => {
+      window.removeEventListener("scroll", stickyHeaderFunc);
+    };
   }, []);
 
-  const toggleMenu = () => {
-    if (menuRef.current) {
-      menuRef.current.classList.toggle("show__menu");
-    }
-  };
+  const toggleMenu = () => menuRef.current.classList.toggle("show__menu");
 
   return (
     <header className="header" ref={headerRef}>

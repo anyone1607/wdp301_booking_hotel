@@ -152,7 +152,16 @@ function CreateTour() {
                                 />
                             </Form.Group>
 
-                        
+                            <Form.Group className="mb-3" controlId="formPrice">
+                                <Form.Label>Price ($)</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    name="price"
+                                    value={formData.price}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </Form.Group>
                         </Col>
                         <Col md={6} className="d-flex justify-content-center align-items-center">
                             {/* Hiển thị hình ảnh nếu có */}

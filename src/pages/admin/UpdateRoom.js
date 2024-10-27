@@ -62,7 +62,7 @@ function UpdateRoom() {
                 });
                 const data = await response.json();
                 if (data.success && Array.isArray(data.data)) {
-                    setHotels(data.data); // Cập nhật danh sách khách sạn
+                    setHotels(data.data);  // Cập nhật danh sách khách sạn
                 } else {
                     console.error("Invalid data format", data);
                 }
@@ -70,6 +70,7 @@ function UpdateRoom() {
                 console.error("Error fetching hotels:", error);
             }
         };
+
         fetchRoomData();
         fetchHotels();
         setLoading(false);  // Sau khi dữ liệu được tải, ngừng loading
@@ -147,7 +148,7 @@ function UpdateRoom() {
                                     <option value="">Select a hotel</option>
                                     {hotels.map((hotel) => (
                                         <option key={hotel._id} value={hotel._id}>
-                                            {hotel.title} {/* Giả sử hotel có thuộc tính title */}
+                                            {hotel.title}
                                         </option>
                                     ))}
                                 </Form.Control>

@@ -41,6 +41,7 @@ function UpdateExtrafees() {
                         hotelId: data.hotelId._id,
                         extraPrice: data.extraPrice,
                         status: data.status, // Giữ giá trị status từ API
+                        description: data.description
                     });
                 }
             } catch (error) {
@@ -175,7 +176,17 @@ function UpdateExtrafees() {
                         </Col>
                     </Row>
 
-                    
+                    <Form.Group className="mb-3" controlId="formDescription">
+                        <Form.Label>Description</Form.Label>
+                        <Form.Control
+                            as="textarea"
+                            rows={3}
+                            name="description"
+                            value={formData.description}
+                            onChange={handleInputChange}
+                            required
+                        />
+                    </Form.Group>
 
                     <div className="text-center">
                         <Button variant="primary" type="submit" className="px-5">

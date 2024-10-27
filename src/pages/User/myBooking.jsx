@@ -1,222 +1,343 @@
 // src/pages/MyBookings.js
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { Container, Row, Col, Card, Button, Modal } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Modal, Form } from "react-bootstrap";
 import { AuthContext } from "../../context/AuthContext";
 import { BASE_URL } from "../../utils/config";
 import Swal from "sweetalert2";
 import "../../styles/mybooking.css";
 import { format } from "date-fns";
-import TourCardBooking from "../../components/Tourdetail-mybooking/TourCard";
 import CommonSection from "../../shared/CommonSection";
 
 const MyBookings = () => {
-    const { user } = useContext(AuthContext);
-    const [bookings, setBookings] = useState([]);
-    const [tours, setTours] = useState([]);
-    const [showModal, setShowModal] = useState(false);
-    const [selectedBooking, setSelectedBooking] = useState(null);
-    const [hotel, setHotel] = useState(null);
-    const [restaurant, setRestaurant] = useState(null);
-    const userId = user ? user._id : null;
+  const { user } = useContext(AuthContext);
+  const [bookings, setBookings] = useState([]);
+  const [tours, setTours] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundData, setRefundData] = useState({
+    bankNumber: "",
+    bankName: "",
+    reasons: "",
+    name: "",
+    paymentId: "",  
+  });
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!user) {
-                return; // Do not fetch if user is not logged in
-            }
+  const userId = user ? user._id : null;
+  const bankList = [
+    "Vietcombank",
+    "BIDV",
+    "Techcombank",
+    "Agribank",
+    "MB Bank",
+    "VPBank",
+    "Sacombank",
+  ];
 
-            try {
-                const bookingsResponse = await axios.get(`${BASE_URL}/booking/user/${userId}`, { withCredentials: true });
-                const toursResponse = await axios.get(`${BASE_URL}/tours`, { withCredentials: true });
-                setBookings(bookingsResponse.data.data);
-                setTours(toursResponse.data.data);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        };
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
 
-        fetchData();
-    }, [user, userId]);
+      try {
+        const [bookingsResponse, toursResponse] = await Promise.all([
+          axios.get(`${BASE_URL}/booking/user/${userId}`, { withCredentials: true }),
+          axios.get(`${BASE_URL}/tours`, { withCredentials: true }),
+        ]);
 
-    const mapBookingToTour = (booking) => {
-        const tourInfo = tours.find((tour) => tour.title === booking.tourName);
-        return { ...booking, tourInfo: tourInfo || null };
+        setBookings(bookingsResponse.data.data);
+        setTours(toursResponse.data.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     };
 
-    const bookingsWithTourInfo = bookings.map(mapBookingToTour);
+    fetchData();
+  }, [user, userId]);
 
-    const handleCancelBooking = async (bookingId) => {
-        try {
-            const response = await axios.put(`${BASE_URL}/booking/cancel/${bookingId}`, null, { withCredentials: true });
+  const handleShowRefundModal = async (booking) => {
+    setSelectedBooking(booking);
+    setRefundData({
+      bankNumber: "",
+      name: "",
+      bankName: "",
+      reasons: "",
+      paymentId: "", // Reset paymentId here
+    });
 
-            if (response.status === 200) {
-                const updatedBookings = bookings.map((booking) =>
-                    booking._id === bookingId ? { ...booking, status: 'cancelled' } : booking
-                );
-                setBookings(updatedBookings);
-                Swal.fire({
-                    icon: "success",
-                    title: "Booking cancelled successfully",
-                    showConfirmButton: true,
-                    confirmButtonText: "OK",
-                    confirmButtonColor: "#3085d6",
-                    timer: 1500,
-                });
-            } else {
-                console.error("Failed to cancel booking");
-            }
-        } catch (error) {
-            console.error("Error cancelling booking:", error);
-        }
+    // Fetch the paymentId from the API
+    try {
+        const paymentResponse = await axios.get(`${BASE_URL}/payment/${booking._id}`, { withCredentials: true });
+        setRefundData((prevData) => ({
+          ...prevData,
+          paymentId: paymentResponse.data.data._id  // Set paymentId from response
+        }));
+      } catch (error) {
+        console.error("Error fetching paymentId:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Could not fetch payment ID. Please try again later.",
+        });
+      }
+  
+      setShowRefundModal(true);
     };
 
-    const handleShowDetails = async (booking) => {
-        const hotelId = booking.hotelId;
-        const restaurantId = booking.restaurantId;
+  const handleCloseRefundModal = () => {
+    setShowRefundModal(false);
+    setSelectedBooking(null);
+  };
 
-        try {
-            const responseHotel = await axios.get(`${BASE_URL}/hotels/${hotelId}`, { withCredentials: true });
-            setHotel(responseHotel.data);
+  const handleRefundSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${BASE_URL}/refund/`, refundData, { withCredentials: true });
 
-            const responseRestaurant = await axios.get(`${BASE_URL}/restaurants/${restaurantId}`, { withCredentials: true });
-            setRestaurant(responseRestaurant.data);
-        } catch (error) {
-            console.error("Error fetching hotel or restaurant data:", error);
-        }
+      if (response.status === 201) {
+        Swal.fire({
+          icon: "success",
+          title: "Refund request created successfully",
+          showConfirmButton: true,
+          confirmButtonText: "OK",
+          confirmButtonColor: "#3085d6",
+          timer: 1500,
+        });
+        handleCloseRefundModal();
+      }
+    } catch (error) {
+      console.error("Error creating refund request:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Refund Error",
+        text: "There was an error creating the refund request. Please try again.",
+      });
+    }
+  };
 
-        setSelectedBooking(booking);
-        setShowModal(true);
-    };
+  const mapBookingToTour = (booking) => {
+    const tourInfo = tours.find((tour) => tour.title === booking.tourName);
+    return { ...booking, tourInfo: tourInfo || null };
+  };
 
-    const handleCloseModal = () => {
-        setShowModal(false);
-        setSelectedBooking(null);
-    };
+  const bookingsWithTourInfo = bookings.map(mapBookingToTour);
 
-    const handlePayment = async (booking) => {
-        try {
-            const response = await axios.post(
-                `${BASE_URL}/payment/create-payment-link`,
-                {
-                    amount: booking.totalAmount,
-                    bookingId: booking._id,
-                },
-                { withCredentials: true }
-            );
+  const handleCancelBooking = async (bookingId) => {
+    try {
+      const response = await axios.put(`${BASE_URL}/booking/cancel/${bookingId}`, null, { withCredentials: true });
 
-            if (response.status === 200) {
-                const { checkoutUrl } = response.data;
-                Swal.fire({
-                    icon: "info",
-                    title: "Redirecting to Payment",
-                    text: "You will be redirected to the payment page.",
-                    showConfirmButton: false,
-                    timer: 2000,
-                });
-                window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
-            } else {
-                console.error("Failed to create payment link");
-            }
-        } catch (error) {
-            console.error("Error creating payment link:", error);
-            Swal.fire({
-                icon: "error",
-                title: "Payment Link Error",
-                text: "There was an error creating the payment link. Please try again.",
-            });
-        }
-    };
+      if (response.status === 200) {
+        setBookings((prevBookings) =>
+          prevBookings.map((booking) =>
+            booking._id === bookingId ? { ...booking, status: "cancelled" } : booking
+          )
+        );
+        Swal.fire({
+          icon: "success",
+          title: "Booking cancelled successfully",
+          showConfirmButton: true,
+          confirmButtonText: "OK",
+          confirmButtonColor: "#3085d6",
+          timer: 1500,
+        });
+      }
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Cancellation Error",
+        text: "There was an error cancelling the booking. Please try again.",
+      });
+    }
+  };
 
-    return (
-        <>
-            <CommonSection title="My Bookings" />
-            <Container>
-                <br />
-                <br />
-                {bookingsWithTourInfo.length === 0 ? (
-                    <p>You don't have any booked tours yet.</p>
-                ) : (
-                    <Row>
-                        {bookingsWithTourInfo.map((booking) => (
-                            <Col lg="4" md="6" sm="6" className="mb-4" key={booking._id}>
-                                <Card>
-                                    <Card.Body>
-                                        <Card.Title>{booking.tourName || "Tour not found"}</Card.Title>
-                                        {booking.tourInfo ? (
-                                            <TourCardBooking tour={booking.tourInfo} />
-                                        ) : (
-                                            <p>Tour information not available</p>
-                                        )}
-                                        <Card.Text>
-                                            <strong>Date:</strong> {format(new Date(booking.bookAt), "dd-MM-yyyy")}
-                                            <br />
-                                            <strong>Status:</strong> <span className={
-                                                booking.status === 'pending' ? 'status-pending' :
-                                                    booking.status === 'confirmed' ? 'status-confirmed' :
-                                                        booking.status === 'cancelled' ? 'status-cancelled' : ''
-                                            }>{booking.status}</span>
-                                        </Card.Text>
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedBooking(null);
+  };
 
-                                        <Button variant="primary" onClick={() => handleShowDetails(booking)}>
-                                            Details
-                                        </Button>
-                                        {booking.status === "pending" && (
-                                            <>
-                                                <Button className="mx-2" variant="danger" onClick={() => handleCancelBooking(booking._id)}>
-                                                    Cancel Booking
-                                                </Button>
-
-                                                <Button variant="success" onClick={() => handlePayment(booking)}>
-                                                    Pay Now
-                                                </Button>
-                                            </>
-                                        )}
-                                        {booking.status === "confirmed" && (
-                                            <Button variant="info" disabled>
-                                                Payment Completed
-                                            </Button>
-                                        )}
-                                        {booking.status === "cancelled" && (
-                                            <Button variant="secondary" disabled>
-                                                Booking Cancelled
-                                            </Button>
-                                        )}
-                                    </Card.Body>
-                                </Card>
-                            </Col>
+  return (
+    <>
+      <CommonSection title="My Bookings" />
+      <Container>
+        <br />
+        <br />
+        {bookingsWithTourInfo.length === 0 ? (
+          <p>You don't have any booked tours yet.</p>
+        ) : (
+          <Row>
+            {bookingsWithTourInfo.map((booking) => (
+              <Col lg="4" md="6" sm="6" className="mb-4" key={booking._id}>
+                <Card style={{ width: "100%", height: "100%" }}>
+                  <Card.Body>
+                    <Card.Title>{ booking.hotelId.title}</Card.Title>
+                    {booking.hotelId.photo && (
+                      <Card.Img
+                        variant="top"
+                        src={booking.hotelId.photo}
+                        alt="Hotel"
+                        style={{ width: "100%", height: "200px", objectFit: "cover" }}
+                      />
+                    )}
+                    <Card.Text>
+                      <strong>Name:</strong> {booking.name}<br />
+                      <strong>Phone:</strong> {booking.phone}<br />
+                      <strong>Email:</strong> {booking.email}<br />
+                      <strong>Check-in Date:</strong> {format(new Date(booking.bookAt), "dd-MM-yyyy")}<br />
+                      <strong>Check-out Date:</strong> {format(new Date(booking.checkOut), "dd-MM-yyyy")}<br />
+                      <strong>Total Amount:</strong> {booking.totalAmount} VND<br />
+                      <strong>Room(s):</strong>
+                      <ul>
+                        {Object.entries(booking.roomIds.reduce((acc, room) => {
+                          acc[room.roomName] = (acc[room.roomName] || 0) + 1;
+                          return acc;
+                        }, {})).map(([roomName, quantity]) => (
+                          <li key={roomName}>{roomName} (x{quantity})</li>
                         ))}
-                    </Row>
-                )}
-
-                <Modal show={showModal} onHide={handleCloseModal}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Booking Details</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        {selectedBooking && (
-                            <>
-                                <p><strong>Tour Name:</strong> {selectedBooking.tourName}</p>
-                                <p><strong>Book Date:</strong> {format(new Date(selectedBooking.bookAt), "dd-MM-yyyy")}</p>
-                                <p><strong>Full Name:</strong> {selectedBooking.fullName}</p>
-                                <p><strong>Email:</strong> {selectedBooking.userEmail}</p>
-                                <p><strong>Group Size:</strong> {selectedBooking.adult}-adult || {selectedBooking.children}-children || {selectedBooking.baby}-baby</p>
-                                <p><strong>Phone:</strong> {selectedBooking.phone}</p>
-                                <p><strong>Hotel:</strong> {hotel ? hotel.name : "Not available"}</p>
-                                <p><strong>Restaurant:</strong> {restaurant ? restaurant.name : "Not available"}</p>
-                                <p><strong>Price:</strong> {selectedBooking.price} VND</p>
-                            </>
+                      </ul>
+                      <strong>Extras:</strong>
+                      <ul>
+                        {booking.extraIds.length > 0 ? (
+                          booking.extraIds.map((extra) => (
+                            <li key={extra._id}>{extra.extraName}</li>
+                          ))
+                        ) : (
+                          <li>No extras added</li>
                         )}
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={handleCloseModal}>
-                            Close
+                      </ul>
+                      <strong>Status:</strong>
+                      <span className={booking.status}>
+                        {booking.status}
+                      </span>
+                    </Card.Text>
+                    <Button variant="warning" onClick={() => handleShowRefundModal(booking)}>
+                      Refund
+                    </Button>
+                    {booking.status === "pending" && (
+                      <>
+                        <Button className="mx-2" variant="danger" onClick={() => handleCancelBooking(booking._id)}>
+                          Cancel Booking
                         </Button>
-                    </Modal.Footer>
-                </Modal>
-            </Container>
-        </>
-    );
+                      </>
+                    )}
+                    {booking.status === "confirmed" && <Button variant="info" disabled>Payment Completed</Button>}
+                    {booking.status === "cancelled" && <Button variant="secondary" disabled>Booking Cancelled</Button>}
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        )}
+        <Modal show={showModal} onHide={handleCloseModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>Booking Details</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {selectedBooking && (
+              <>
+                <p><strong>Hotel Name:</strong> {selectedBooking.hotelId.title}</p>
+                <p><strong>Book Date:</strong> {format(new Date(selectedBooking.bookAt), "dd-MM-yyyy")}</p>
+                <p><strong>Check Out:</strong> {format(new Date(selectedBooking.checkOut), "dd-MM-yyyy")}</p>
+                <p><strong>Name:</strong> {selectedBooking.name}</p>
+                <p><strong>Email:</strong> {selectedBooking.email}</p>
+                <p><strong>Group Size:</strong> {selectedBooking.adult} Adult || {selectedBooking.children} Children || {selectedBooking.baby} Baby</p>
+                <p><strong>Phone:</strong> {selectedBooking.phone}</p>
+                <p><strong>Rooms:</strong>
+                  <ul>
+                    {Object.entries(selectedBooking.roomIds.reduce((acc, room) => {
+                      acc[room.roomName] = (acc[room.roomName] || 0) + 1;
+                      return acc;
+                    }, {})).map(([roomName, quantity]) => (
+                      <li key={roomName}>{roomName} (x{quantity})</li>
+                    ))}
+                  </ul>
+                </p>
+                <p><strong>Extras:</strong>
+                  <ul>
+                    {selectedBooking.extraIds.length > 0 ? (
+                      selectedBooking.extraIds.map((extra) => (
+                        <li key={extra._id}>{extra.extraName}</li>
+                      ))
+                    ) : (
+                      <li>No extras added</li>
+                    )}
+                  </ul>
+                </p>
+                <p><strong>Total Amount:</strong> {selectedBooking.totalAmount} VND</p>
+              </>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+        
+        <Modal show={showRefundModal} onHide={handleCloseRefundModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>Request Refund</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form onSubmit={handleRefundSubmit}>
+              <Form.Group className="mb-3">
+                <Form.Label>Payment ID</Form.Label>
+                <Form.Control 
+                  type="text" 
+                  value={refundData.paymentId} 
+                  readOnly 
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Bank Name</Form.Label>
+                <Form.Select 
+                  value={refundData.bankName} 
+                  onChange={(e) => setRefundData({ ...refundData, bankName: e.target.value })} 
+                  required
+                >
+                  <option value="">Select Bank</option>
+                  {bankList.map((bank, index) => (
+                    <option key={index} value={bank}>{bank}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Bank Account Number</Form.Label>
+                <Form.Control 
+                  type="text" 
+                  value={refundData.bankNumber} 
+                  onChange={(e) => setRefundData({ ...refundData, bankNumber: e.target.value })} 
+                  required 
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Account Holder Name</Form.Label>
+                <Form.Control 
+                  type="text" 
+                  value={refundData.name} 
+                  onChange={(e) => setRefundData({ ...refundData, name: e.target.value })} 
+                  required 
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Reason for Refund</Form.Label>
+                <Form.Control 
+                  as="textarea" 
+                  rows={3} 
+                  value={refundData.reasons} 
+                  onChange={(e) => setRefundData({ ...refundData, reasons: e.target.value })} 
+                  required 
+                />
+              </Form.Group>
+              <Button variant="primary" type="submit">
+                Submit Refund Request
+              </Button>
+            </Form>
+          </Modal.Body>
+        </Modal>
+      </Container>
+    </>
+  );
 };
 
 export default MyBookings;

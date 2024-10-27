@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { BASE_URL } from "../../utils/config";
 import axios from "axios";
 
-const PaymentSuccess = () => {
+const PaymentSuccessAdmin = () => {
   const { bookingId } = useParams();
   const [message, setMessage] = useState('Processing your payment...');
   const [booking, setBooking] = useState(null);
@@ -74,4 +74,4 @@ const PaymentSuccess = () => {
   );
 };
 
-export default PaymentSuccess;
+export default PaymentSuccessAdmin;

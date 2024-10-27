@@ -24,6 +24,7 @@ const TourDetails = () => {
    const { photo, title, desc, reviews, city, address, distance, maxGroupSize } = tour || {};
 
    const { totalRating, avgRating } = calculateAvgRating(reviews);
+   const [reviewObj, setReviewObj] = useState(null)
    const hotelId = id;
 
    // Fetch room categories based on the hotel ID
@@ -46,7 +47,8 @@ const TourDetails = () => {
    const navigate = useNavigate();
 
    const submitHandler = async e => {
-      // e.preventDefault();
+      // e.preventDefault(); // Prevent the default behavior of form submission
+
       const reviewText = reviewMsgRef.current.value;
 
       try {
@@ -58,28 +60,35 @@ const TourDetails = () => {
                confirmButtonText: 'Log in',
                confirmButtonColor: '#3085d6',
                timer: 1500
-            })
+            });
             return;
          }
 
-         const reviewObj = {
+         const reviewData = {
             username: user?.username,
             reviewText,
-            rating: tourRating
+            rating: tourRating,
          };
+         console.log(reviewData);
 
-         const res = await fetch(`${BASE_URL}/review/${id}`, {
+         const res = await fetch(`${BASE_URL}/review/${hotelId}`, {
             method: 'POST',
             headers: {
                'Content-Type': 'application/json'
             },
             credentials: 'include',
-            body: JSON.stringify(reviewObj)
+            body: JSON.stringify(reviewData)
          });
 
          const result = await res.json();
          if (!res.ok) {
-            return alert(result.message);
+            return Swal.fire({
+               icon: 'error',
+               title: result.message,
+               confirmButtonText: 'OK',
+               confirmButtonColor: '#d33',
+               timer: 1500
+            });
          }
 
          Swal.fire({
@@ -89,10 +98,18 @@ const TourDetails = () => {
             confirmButtonText: 'OK',
             confirmButtonColor: '#3085d6',
             timer: 1500
-         })
+         });
+
          navigate(`/tours/${hotelId}`);
       } catch (error) {
-         alert(error.message);
+         Swal.fire({
+            icon: 'error',
+            title: 'An error occurred',
+            text: error.message,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#d33',
+            timer: 1500
+         });
       }
    };
 
@@ -105,7 +122,8 @@ const TourDetails = () => {
             const bookingsResponse = await axios.get(`${BASE_URL}/booking`, {
                withCredentials: true,
             });
-            setBookings(bookingsResponse.data.data.filter(b => id === b.hotelId));
+
+            setBookings(bookingsResponse.data.data.filter(b => id === b.hotelId._id));
 
          } catch (error) {
             console.error("Error fetching bookings:", error);
@@ -113,13 +131,11 @@ const TourDetails = () => {
       };
 
       fetchData();
-      window.scrollTo(0, 0);
-   }, [user]);
+      window.scrollTo(0, 0); // Only run this once when the component is mounted
+   }, [user, id]);
 
    // Check if the current user has a completed booking for the tour
    const userCanReview = bookings.some(booking => booking.userId === user?._id && booking.status === 'confirmed');
-
-   console.log(bookings)
 
    return (
       <section>
@@ -150,6 +166,7 @@ const TourDetails = () => {
                            <h5>Description</h5>
                            <p>{desc}</p>
                         </div>
+
                         {/* ============ Room Category Section START ============ */}
                         <div className="room-category-section mt-5">
                            <h4>Room Categories</h4>
@@ -178,7 +195,6 @@ const TourDetails = () => {
                         </div>
                         {/* ============ Room Category Section END ============ */}
 
-
                         {/* ============ TOUR REVIEWS SECTION START ============ */}
                         <div className="tour__reviews mt-4">
                            <h4>Reviews ({reviews?.length} reviews)</h4>
@@ -196,51 +212,49 @@ const TourDetails = () => {
                                  <div className="review__input">
                                     <input type="text" ref={reviewMsgRef} placeholder='Share your thoughts' required />
                                     <button className='btn primary__btn text-white' type='submit'>
-                                       Submit
+                                       Submit Review
                                     </button>
                                  </div>
                               </Form>
                            ) : (
-                              <p>Only users who have completed this tour can leave a review.</p>
+                              <p>You need to complete a booking for this hotel before leaving a review.</p>
                            )}
 
                            <ListGroup className='user__reviews'>
-                              {
-                                 reviews?.map((review, index) => (
-                                    <div className="review__item" key={index}>
-                                       <img src={avatar} alt="" />
+                              {reviews?.map((review) => (
+                                 <div className="review__item" key={review._id}>
+                                    <img src={avatar} alt="" />
 
-                                       <div className="w-100">
-                                          <div className="d-flex align-items-center justify-content-between">
-                                             <div>
-                                                <h5>{review.username}</h5>
-                                                <p>{new Date(review.createdAt).toLocaleDateString('en-US', options)}</p>
-                                             </div>
-
-                                             <span className='d-flex align-items-center'>
-                                                {review.rating}<i className='ri-star-s-fill'></i>
-                                             </span>
+                                    <div className="w-100">
+                                       <div className="d-flex align-items-center justify-content-between">
+                                          <div>
+                                             <h5>{review.username}</h5>
+                                             <p>{new Date(review.createdAt).toLocaleDateString("en-US", options)}</p>
                                           </div>
-
-                                          <h6>{review.reviewText}</h6>
+                                          <span className='d-flex align-items-center'>
+                                             {review.rating} <i className='ri-star-s-fill'></i>
+                                          </span>
                                        </div>
+
+                                       <h6>{review.reviewText}</h6>
                                     </div>
-                                 ))
-                              }
+                                 </div>
+                              ))}
                            </ListGroup>
                         </div>
-                        {/* ============ TOUR REVIEWS SECTION END ============== */}
+                        {/* ============ TOUR REVIEWS SECTION END ============ */}
                      </div>
                   </Col>
 
+                  {/* ============ BOOKING SECTION ============ */}
                   <Col lg='6'>
-                     <Booking tour={tour} avgRating={avgRating} />
+                     <Booking tour={tour} />
                   </Col>
                </Row>
             }
          </Container>
       </section>
    );
-}
+};
 
 export default TourDetails;

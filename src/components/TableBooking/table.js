@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FormControl, InputGroup, Modal, Table, Button } from "react-bootstrap";
+import { Button, FormControl, InputGroup, Modal, Table } from "react-bootstrap";
 import axios from "axios";
 import ReactPaginate from "react-paginate";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../utils/config";
+
 import "./table.css";
 
 function TableBooking({ data }) {
@@ -12,33 +13,35 @@ function TableBooking({ data }) {
   const [filterText, setFilterText] = useState("");
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [hotel, setHotel] = useState(null);
+  const [payments, setPayments] = useState({}); // Lưu trạng thái thanh toán dưới dạng object
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [refundDetails, setRefundDetails] = useState(null);
-  const [payments, setPayments] = useState({});
   const [currentPage, setCurrentPage] = useState(0);
   const bookingsPerPage = 10;
+  const navigate = useNavigate();
 
+  // Lấy trạng thái thanh toán cho từng booking khi component được render
   useEffect(() => {
     const fetchPayments = async () => {
       const paymentStatus = {};
-      await Promise.all(data.map(async (booking) => {
+      for (const booking of data) {
         try {
           const response = await axios.get(`${BASE_URL}/payment/${booking._id}`);
-          paymentStatus[booking._id] = response.data.data ? response.data.data.status : 'No payment';
+          paymentStatus[booking._id] = response.data.data ? response.data.data.status : 'No payment'; // Nếu không có payment, set 'No payment'
         } catch (error) {
           console.error(`Error fetching payment for booking ${booking._id}:`, error);
-          paymentStatus[booking._id] = 'Error fetching payment';
+          paymentStatus[booking._id] = 'Error fetching payment'; // Thông báo lỗi nếu không lấy được payment
         }
-      }));
-      setPayments(paymentStatus);
+      }
+      setPayments(paymentStatus); // Cập nhật trạng thái thanh toán
     };
 
     fetchPayments();
   }, [data]);
 
   const handleToggleStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === "pending" ? "confirmed" : 
-                      currentStatus === "confirmed" ? "cancelled" : "pending";
+    let newStatus = currentStatus === "pending" ? "confirmed" : currentStatus === "confirmed" ? "cancelled" : "pending";
 
     try {
       const response = await axios.put(`${BASE_URL}/booking/${id}`, { status: newStatus });
@@ -49,11 +52,10 @@ function TableBooking({ data }) {
           )
         );
       } else {
-        toast.error("Failed to update booking status");
+        console.error("Failed to update booking status");
       }
     } catch (error) {
       console.error("Error updating booking status:", error);
-      toast.error("An error occurred while updating the status");
     }
   };
 
@@ -72,13 +74,16 @@ function TableBooking({ data }) {
   };
 
   const handleShowDetails = async (booking) => {
+    const hotelId = booking.hotelId;
+
     try {
-      const responseHotel = await axios.get(`${BASE_URL}/hotels/${booking.hotelId}`);
-      setSelectedBooking(booking);
-      setShowModal(true);
+      const responseHotel = await axios.get(`${BASE_URL}/hotels/${hotelId}`);
+      setHotel(responseHotel.data);
     } catch (error) {
-      console.error("Error fetching hotel data:", error);
+      console.error("Error fetching hotel or restaurant data:", error);
     }
+    setSelectedBooking(booking);
+    setShowModal(true);
   };
 
   const handleRefundDetails = async (bookingId) => {
@@ -119,6 +124,13 @@ function TableBooking({ data }) {
     }
   };
 
+
+
+  const handlePaymentSuccess = () => {
+    toast.success("Thành công, vui lòng chờ quản lý duyệt booking của bạn.");
+    navigate("/booking-management");
+  };
+
   const handlePageClick = (data) => {
     setCurrentPage(data.selected);
   };
@@ -149,7 +161,7 @@ function TableBooking({ data }) {
                 <th>Phone</th>
                 <th>Booking Date</th>
                 <th>Price</th>
-                <th>Payment Status</th>
+                <th>Payment Status</th> {/* Thêm cột trạng thái thanh toán */}
                 <th>Refund</th>
                 <th>Actions</th>
               </tr>
@@ -166,13 +178,14 @@ function TableBooking({ data }) {
                   <td>{new Date(booking.bookAt).toLocaleString("VN", { year: "numeric", month: "2-digit", day: "2-digit" })}</td>
                   <td>{booking.totalAmount}</td>
                   <td
+
                     style={{
                       backgroundColor: payments[booking._id] === "confirmed" ? "blue" : "transparent",
                       color: payments[booking._id] === "confirmed" ? "white" : "black",
                     }}
                   >
                     {payments[booking._id] || "Loading..."}
-                  </td>
+                  </td> {/* Hiển thị trạng thái thanh toán */}
                   <td>
                     {payments[booking._id] === "confirmed" && booking.status === "pending" ? (
                       <Button variant="info" onClick={(e) => { e.stopPropagation(); handleRefundDetails(booking._id); }}>
@@ -214,7 +227,7 @@ function TableBooking({ data }) {
         </div>
       </div>
 
-      {/* Modal Booking Details */}
+      {/* Modal */}
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>Booking Details</Modal.Title>
@@ -231,29 +244,40 @@ function TableBooking({ data }) {
               <p>
                 <strong>Room:</strong>
                 {Object.entries(selectedBooking.roomIds.reduce((acc, room) => { acc[room.roomName] = (acc[room.roomName] || 0) + 1; return acc; }, {}))
-                  .map(([roomName, count], index) => (
-                    <span key={index}> {roomName} (x{count}){index < Object.entries(selectedBooking.roomIds).length - 1 ? ", " : ""}</span>))}
+                  .map(([roomName, count], index) => (<span key={index}>{" "}{roomName} (x{count}){index < Object.entries(selectedBooking.roomIds).length - 1 ? ", " : ""}</span>))}
               </p>
               <p>
                 <strong>Extra Fees:</strong>
                 {selectedBooking.extraIds.length > 0 ? (
                   selectedBooking.extraIds.map((extra, index) => (
-                    <span key={index}> {extra.extraName}{index < selectedBooking.extraIds.length - 1 ? ", " : ""}</span>
+                    <span key={index}>
+                      {" "}
+                      {extra.extraName}
+                      {index < selectedBooking.extraIds.length - 1 ? ", " : ""}
+                    </span>
                   ))
                 ) : (
-                  <span>No extra fees</span>
+                  " None"
                 )}
               </p>
-              <p><strong>Price:</strong> {selectedBooking.totalAmount} VND</p>
+              <p><strong>Total Price:</strong> {selectedBooking.totalAmount}</p>
               <p><strong>Booking Date:</strong> {new Date(selectedBooking.bookAt).toLocaleString("VN", { year: "numeric", month: "2-digit", day: "2-digit" })}</p>
+              <p><strong>Booking CheckOut:</strong> {new Date(selectedBooking.checkOut).toLocaleString("VN", { year: "numeric", month: "2-digit", day: "2-digit" })}</p>
+              {hotel && (
+                <>
+                  <p><strong>Hotel Name:</strong> {hotel.title}</p>
+                  <p><strong>Hotel Address:</strong> {hotel.address}</p>
+                  <p><strong>Hotel Price:</strong> {hotel.cheapestPrice}</p>
+                </>
+              )}
             </div>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>Close</Button>
+          {/* <button className="btn btn-primary" onClick={handlePaymentSuccess}>Thanh toán</button> */}
+          <button className="btn btn-secondary" onClick={handleCloseModal}>Close</button>
         </Modal.Footer>
       </Modal>
-
       {/* Modal Refund Details */}
       <Modal show={showRefundModal} onHide={() => setShowRefundModal(false)}>
         <Modal.Header closeButton>

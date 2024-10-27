@@ -367,7 +367,7 @@ const Booking = ({ tour, avgRating }) => {
                </Row>
 
                <FormGroup>
-                  <h6>Chọn Phòng</h6>
+                  <h6>Select room & quantity</h6>
                   {roomCategories.length > 0 && roomCategories.map(room => {
                      const availableRoomCount = availableRoomCounts.find(rc => rc.roomId === room._id)?.availableCount || 0;
                      return (
@@ -375,7 +375,7 @@ const Booking = ({ tour, avgRating }) => {
                            <label>
                               {room.roomName} - ${room.roomPrice}
                               <span style={{ marginLeft: '10px', fontStyle: 'italic', color: 'gray' }}>
-                                 (Còn lại: {availableRoomCount} phòng)
+                                 (Remaining: {availableRoomCount} rooms)
                               </span>
                            </label>
 
@@ -388,7 +388,7 @@ const Booking = ({ tour, avgRating }) => {
                                  type="number"
                                  min="0"
                                  max={availableRoomCount}
-                                 placeholder="Số lượng"
+                                 placeholder="0"
                                  onChange={(e) => handleSelectRoomChange(room._id, e.target.value)}
                               />
                            )}
@@ -398,7 +398,7 @@ const Booking = ({ tour, avgRating }) => {
                </FormGroup>
 
                <FormGroup>
-                  <h6>Chọn dịch vụ thêm</h6>
+                  <h6>Select additional services</h6>
                   {extraFee.length > 0 && extraFee.map(fee => (
                      <div key={fee._id}>
                         <label className="d-flex align-items-center">

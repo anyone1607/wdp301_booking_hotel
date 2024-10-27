@@ -3,20 +3,19 @@ import { useParams } from 'react-router-dom';
 import { BASE_URL } from "../../utils/config";
 import axios from "axios";
 
-const PaymentSuccessAdmin = () => {
-  const { bookingId } = useParams(); // Lấy bookingId từ URL
+const PaymentSuccess = () => {
+  const { bookingId } = useParams();
   const [message, setMessage] = useState('Processing your payment...');
-  const [booking, setBooking] = useState(null); // Đổi thành null để dễ kiểm tra
+  const [booking, setBooking] = useState(null);
 
   useEffect(() => {
     const fetchBooking = async () => {
       try {
-        // Lấy thông tin booking theo ID
         const response = await axios.get(`${BASE_URL}/booking/${bookingId}`, { withCredentials: true });
-        setBooking(response.data.data); // Cập nhật booking với thông tin từ response
+        setBooking(response.data.data);
       } catch (error) {
         console.error("Error fetching booking:", error.message);
-        setMessage('An error occurred while fetching your booking'); // Thông báo lỗi
+        setMessage('An error occurred while fetching your booking');
       }
     };
 
@@ -25,35 +24,43 @@ const PaymentSuccessAdmin = () => {
 
   useEffect(() => {
     const createPayment = async () => {
-      if (!booking) return; // Nếu booking chưa được tải, không làm gì cả
+      if (!booking) return;
+
+      console.log("Current booking status before payment:", booking.status); // Log trạng thái hiện tại
 
       try {
-        // Kiểm tra xem payment đã tồn tại chưa
         const paymentResponse = await axios.get(`${BASE_URL}/payment/${bookingId}`);
 
-        // Nếu payment đã tồn tại, không tạo payment mới
         if (paymentResponse.data.data) {
           setMessage('Payment already exists for this booking.');
           return;
         }
 
-        // Nếu chưa tồn tại, tạo payment mới
         await axios.post(`${BASE_URL}/payment`, {
-          amount: booking.totalAmount, // Sử dụng tổng tiền từ booking
+          amount: booking.totalAmount,
           bookingId: bookingId,
-          status: 'confirmed' // Trạng thái mặc định cho payment
-        });
-
-        // Update status booking
-        await axios.put(`${BASE_URL}/booking/${bookingId}`, {
           status: 'confirmed'
         });
 
-        setMessage('Payment created successfully. Waiting 24h for staff to confirm your booking.');
+        if (booking.status === 'pending' || booking.status === 'processing') {
+          const updateBookingResponse = await axios.put(`${BASE_URL}/booking/${bookingId}`, {
+            status: 'confirmed'
+          });
+
+          if (updateBookingResponse.data.success) {
+            setMessage('Payment created successfully. Your booking is now confirmed.');
+            await axios.post(`${BASE_URL}/email/send-confirmation`, booking);
+          } else {
+            setMessage('Failed to update booking status.');
+          }
+        } else {
+          setMessage('Booking status is not valid for confirmation.');
+        }
 
       } catch (error) {
         console.error("Error creating payment:", error.message);
-        setMessage('An error occurred while creating payment'); // Thông báo lỗi
+        console.error("API error:", error.response ? error.response.data : error.message);
+        setMessage('An error occurred while creating payment');
       }
     };
 
@@ -67,4 +74,4 @@ const PaymentSuccessAdmin = () => {
   );
 };
 
-export default PaymentSuccessAdmin;
+export default PaymentSuccess;

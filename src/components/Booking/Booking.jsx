@@ -69,8 +69,12 @@ const Booking = ({ tour, avgRating }) => {
                axios.get(`${BASE_URL}/booking/availability/${hotelId}/${booking.bookAt}/${booking.checkOut}`, { withCredentials: true }),
             ]);
 
-            setRoomCategories(responseRC.data);
-            setExtraFee(responseET.data.data);
+            // Filter room categories by status 'active'
+            const activeRoomCategories = responseRC.data.filter(room => room.status === 'active');
+            const activeExtraFee = responseET.data.data.filter(extra => extra.status === 'active');
+
+            setRoomCategories(activeRoomCategories);
+            setExtraFee(activeExtraFee);
             setAvailableRoomCounts(responseAvailability.data.availableRooms);
          } catch (error) {
             console.error("Lỗi khi lấy dữ liệu:", error);
@@ -79,6 +83,7 @@ const Booking = ({ tour, avgRating }) => {
 
       fetchData();
    }, [hotelId, booking.bookAt, booking.checkOut]);
+
 
    const handleChange = e => {
       const { id, value } = e.target;
@@ -248,7 +253,8 @@ const Booking = ({ tour, avgRating }) => {
                hotelId,          // Cập nhật hotelId
                roomIds,          // Cập nhật roomIds
                extraIds: selectedExtras,  // Cập nhật extraIds bằng selectedExtras
-               totalAmount       // Cập nhật tổng số tiền
+               totalAmount,
+               status: "confirmed"       // Cập nhật tổng số tiền
             };
 
             // Gửi request với bookingTemp

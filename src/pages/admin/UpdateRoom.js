@@ -1,35 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';  // Sử dụng useParams và useNavigate
-import { Form, Button, Row, Col, Card } from 'react-bootstrap';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Form, Button, Row, Col, Card, Alert } from 'react-bootstrap';
 import '../../styles/tourStyle.css';
 
 function UpdateRoom() {
-    const { id } = useParams();  // Lấy id từ URL
-    const navigate = useNavigate();  // Để điều hướng sau khi cập nhật thành công
+    const { id } = useParams();
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         roomName: '',
         hotelId: '',
         roomPrice: '',
         maxOccupancy: '',
         quantity: '',
-        description: ''
+        description: '',
+        status: 'active',
+        photo: '' // Thêm trường photo vào trạng thái
     });
-    
-    const [hotels, setHotels] = useState([]);  // Lưu danh sách khách sạn để chọn
-    const [loading, setLoading] = useState(true);  // Trạng thái chờ khi tải dữ liệu
 
-    // Fetch dữ liệu phòng khi component mount
+    const [hotels, setHotels] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const fileInput = useRef(null);
+    const [message, setMessage] = useState(''); // Thêm state cho thông báo
+    const [errorMessage, setErrorMessage] = useState(''); // Thêm state cho thông báo lỗi
+
     useEffect(() => {
-        if (!id) {
-            console.error("Room ID is undefined");
-            return;
-        }
-
         const fetchRoomData = async () => {
             const token = localStorage.getItem("accessToken");
             try {
                 const url = `http://localhost:8000/api/v1/roomCategory/${id}`;
-                console.log("Fetching from URL:", url);  // Kiểm tra URL API
                 const response = await fetch(url, {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -39,18 +37,19 @@ function UpdateRoom() {
                 if (data) {
                     setFormData({
                         roomName: data.roomName,
-                        hotelId: data.hotelId._id,
+                        hotelId: data.hotelId ? data.hotelId._id : '', 
                         roomPrice: data.roomPrice,
                         maxOccupancy: data.maxOccupancy,
                         quantity: data.quantity,
-                        description: data.description
+                        description: data.description,
+                        status: data.status || 'active',
+                        photo: data.photo // Lưu URL của hình ảnh cũ
                     });
                 }
             } catch (error) {
                 console.error("Error fetching room data:", error);
             }
         };
-        
 
         const fetchHotels = async () => {
             const token = localStorage.getItem("accessToken");
@@ -62,7 +61,7 @@ function UpdateRoom() {
                 });
                 const data = await response.json();
                 if (data.success && Array.isArray(data.data)) {
-                    setHotels(data.data);  // Cập nhật danh sách khách sạn
+                    setHotels(data.data);
                 } else {
                     console.error("Invalid data format", data);
                 }
@@ -73,39 +72,89 @@ function UpdateRoom() {
 
         fetchRoomData();
         fetchHotels();
-        setLoading(false);  // Sau khi dữ liệu được tải, ngừng loading
+        setLoading(false);
     }, [id]);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        
-        // Nếu tên là hotelId, lưu trực tiếp giá trị của khách sạn
+        const { name, value, files } = e.target;
         const newValue = (name === 'hotelId') ? value :
             (name === 'roomPrice' || name === 'maxOccupancy' || name === 'quantity') 
             ? Number(value) 
-            : value;
-    
+            : (name === 'file') ? files[0] : value;
+
         setFormData({ ...formData, [name]: newValue });
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Khi có file mới được chọn, cập nhật trạng thái photo thành file mới
+            setFormData(prevState => ({
+                ...prevState,
+                photo: URL.createObjectURL(file) // Hiển thị ảnh mới
+            }));
+        } else {
+            // Nếu không có file nào được chọn, giữ lại ảnh cũ
+            setFormData(prevState => ({
+                ...prevState,
+                photo: prevState.photo
+            }));
+        }
+    };
+
+    const validateForm = () => {
+        const { roomName, hotelId, roomPrice, maxOccupancy, quantity, description } = formData;
+        if (!roomName || !hotelId || !roomPrice || !maxOccupancy || !quantity || !description) {
+            return "Vui lòng điền tất cả các trường.";
+        }
+        return null; // Không có lỗi
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         const token = localStorage.getItem("accessToken");
 
+        // Kiểm tra xác thực dữ liệu trước khi gửi
+        const validationError = validateForm();
+        if (validationError) {
+            setErrorMessage(validationError);
+            setMessage('');
+            return; // Dừng lại nếu có lỗi
+        }
+
+        const roomData = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+            roomData.append(key, value);
+        });
+        if (fileInput.current.files[0]) {
+            roomData.append('file', fileInput.current.files[0]); // Gửi file hình ảnh
+        }
+
+        console.log("Submitting data:", Array.from(roomData.entries()));
+
         try {
             const response = await fetch(`http://localhost:8000/api/v1/roomCategory/${id}`, {
                 method: "PUT",
                 headers: {
                     Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(formData),
+                body: roomData,
             });
+
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                console.error("Server error:", errorMessage);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const data = await response.json();
             if (data) {
-                navigate('/room-management');  // Điều hướng sau khi cập nhật thành công
+                setMessage('Cập nhật phòng thành công!'); // Thông báo thành công
+                setErrorMessage(''); // Xóa thông báo lỗi nếu có
+                navigate('/room-management');
             } else {
+                setMessage('Không có gì thay đổi.'); // Thông báo không có gì thay đổi
+                setErrorMessage(''); // Xóa thông báo lỗi nếu có
                 console.error("Failed to update room", formData);
             }
 
@@ -115,12 +164,14 @@ function UpdateRoom() {
     };
 
     if (loading) {
-        return <div>Loading...</div>;  // Hiển thị trạng thái chờ khi tải dữ liệu
+        return <div>Loading...</div>;
     }
 
     return (
         <div className="container mt-5">
             <h2 className="title text-center mb-4">Update Room</h2>
+            {message && <Alert variant="success">{message}</Alert>} {/* Hiển thị thông báo thành công */}
+            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>} {/* Hiển thị thông báo lỗi */}
             <Form onSubmit={handleSubmit}>
                 <Card className="p-4 shadow-sm">
                     <Row>
@@ -132,7 +183,6 @@ function UpdateRoom() {
                                     name="roomName"
                                     value={formData.roomName}
                                     onChange={handleInputChange}
-                                    required
                                 />
                             </Form.Group>
 
@@ -143,7 +193,6 @@ function UpdateRoom() {
                                     name="hotelId"
                                     value={formData.hotelId}
                                     onChange={handleInputChange}
-                                    required
                                 >
                                     <option value="">Select a hotel</option>
                                     {hotels.map((hotel) => (
@@ -161,7 +210,6 @@ function UpdateRoom() {
                                     name="roomPrice"
                                     value={formData.roomPrice}
                                     onChange={handleInputChange}
-                                    required
                                 />
                             </Form.Group>
 
@@ -172,7 +220,6 @@ function UpdateRoom() {
                                     name="maxOccupancy"
                                     value={formData.maxOccupancy}
                                     onChange={handleInputChange}
-                                    required
                                 />
                             </Form.Group>
 
@@ -183,9 +230,42 @@ function UpdateRoom() {
                                     name="quantity"
                                     value={formData.quantity}
                                     onChange={handleInputChange}
-                                    required
                                 />
                             </Form.Group>
+
+                            <Form.Group className="mb-3" controlId="formStatus">
+                                <Form.Label>Status</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    name="status"
+                                    value={formData.status}
+                                    onChange={handleInputChange}
+                                >
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </Form.Control>
+                            </Form.Group>
+
+                            <Form.Group className="mb-3" controlId="formPhoto">
+                                <Form.Label>Photo</Form.Label>
+                                <Form.Control
+                                    type="file"
+                                    name="file"
+                                    ref={fileInput}
+                                    onChange={handleFileChange} // Sử dụng handleFileChange để xử lý ảnh
+                                />
+                            </Form.Group>
+                        </Col>
+
+                        <Col md={6} className="d-flex justify-content-center align-items-center">
+                            {/* Hiển thị hình ảnh cũ nếu có */}
+                            {formData.photo && (
+                                <img
+                                    src={formData.photo}
+                                    alt="Old Room"
+                                    style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'cover', marginBottom: '20px' }}
+                                />
+                            )}
                         </Col>
                     </Row>
 
@@ -197,15 +277,12 @@ function UpdateRoom() {
                             name="description"
                             value={formData.description}
                             onChange={handleInputChange}
-                            required
                         />
                     </Form.Group>
 
-                    <div className="text-center">
-                        <Button variant="primary" type="submit" className="px-5">
-                            Update Room
-                        </Button>
-                    </div>
+                    <Button variant="primary" type="submit">
+                        Update Room
+                    </Button>
                 </Card>
             </Form>
         </div>

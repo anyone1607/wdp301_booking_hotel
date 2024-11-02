@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom"; // Thêm useNavigate
 import "./side-bar.css";
 import { CiBank, CiMap, CiUser, CiViewList, CiLogout } from "react-icons/ci";
 import { GrContact } from "react-icons/gr";
@@ -10,10 +10,18 @@ import { AuthContext } from "../../context/AuthContext"; // Thêm AuthContext
 function SideBar() {
   const location = useLocation();
   const { pathname } = location;
+  const navigate = useNavigate(); // Khai báo navigate
 
   // Lấy role người dùng từ AuthContext
-  const { user } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext); // Thêm setUser để cập nhật context
   const userRole = user?.role;
+
+  const handleLogout = () => {
+    // Xóa thông tin người dùng và token
+    localStorage.removeItem("accessToken");
+    setUser(null); // Cập nhật context để xóa thông tin người dùng
+    navigate("/login"); // Chuyển hướng về trang đăng nhập
+  };
 
   return (
     <div className="sidebar" data-color="black" data-active-color="info">
@@ -58,12 +66,12 @@ function SideBar() {
                 </Link>
               </li>
               <li
-                className={`${pathname === "/tour-management" ? "active" : ""}`}
+                className={`${pathname === "/hotel-management" ? "active" : ""}`}
               >
                 <Link
-                  className={`nav-link ${pathname === "/tour-management" ? "active" : ""
+                  className={`nav-link ${pathname === "/hotel-management" ? "active" : ""
                     }`}
-                  to="/tour-management"
+                  to="/hotel-management"
                   style={{ display: "flex", alignItems: "flex-end" }}
                 >
                   <CiMap style={{ fontSize: "24px" }} />
@@ -74,8 +82,8 @@ function SideBar() {
             </>
           )}
 
-          {/* Hiển thị Manage Bookings cho cả admin và manager */}
-          {(userRole === "admin" || userRole === "manager") && (
+          {/* Hiển thị Manage Bookings cho cả admin và staff */}
+          {(userRole === "admin" || userRole === "staff") && (
             <li
               className={`${pathname === "/booking-management" ? "active" : ""
                 }`}
@@ -93,8 +101,8 @@ function SideBar() {
             </li>
           )}
 
-          {/* Hiển thị Manage Contacts chỉ cho admin */}
-          {userRole === "admin" && (
+          {/* Hiển thị Manage Contacts chỉ cho admin và staff */}
+          {(userRole === "admin" || userRole === "staff") && (
             <li
               className={`${pathname === "/contact-management" ? "active" : ""
                 }`}
@@ -107,10 +115,11 @@ function SideBar() {
               >
                 <GrContact style={{ fontSize: "24px" }} />
                 &ensp;
-                <p style={{ fontSize: "14px" }}>Manage Contacts</p>
+                <p style={{ fontSize: "14px" }}>Reply Contacts</p>
               </Link>
             </li>
           )}
+
           {/* Hiển thị Manage Locations chỉ cho admin */}
           {userRole === "admin" && (
             <li
@@ -129,7 +138,8 @@ function SideBar() {
               </Link>
             </li>
           )}
-          {/* Hiển thị Manage Locations chỉ cho admin */}
+
+          {/* Hiển thị Manage Room chỉ cho admin */}
           {userRole === "admin" && (
             <li
               className={`${pathname === "/room-management" ? "active" : ""}`}
@@ -147,7 +157,7 @@ function SideBar() {
             </li>
           )}
 
-          {/* Hiển thị Manage Locations chỉ cho admin */}
+          {/* Hiển thị Manage Extrafees chỉ cho admin */}
           {userRole === "admin" && (
             <li
               className={`${pathname === "/extrafees-management" ? "active" : ""}`}
@@ -164,11 +174,12 @@ function SideBar() {
               </Link>
             </li>
           )}
+
           {/* Log out */}
           <li className={`${pathname === "/login" ? "active" : ""}`}>
             <Link
               className={`nav-link ${pathname === "/login" ? "active" : ""}`}
-              to="/login"
+              onClick={handleLogout} // Gọi handleLogout khi nhấn vào
               style={{ display: "flex", alignItems: "flex-end" }}
             >
               <CiLogout style={{ fontSize: "24px" }} />

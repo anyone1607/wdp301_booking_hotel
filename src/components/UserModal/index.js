@@ -48,8 +48,8 @@ const UserModal = ({
             >
               <option value="user">User</option>
               <option value="admin">Admin</option>
-              <option value="manager">Manager</option>{" "}
-              {/* Sửa giá trị "manager" */}
+              <option value="staff">Staff</option>{" "}
+              {/* Sửa giá trị "staff" */}
             </Form.Control>
           </Form.Group>
 

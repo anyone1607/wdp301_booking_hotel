@@ -18,7 +18,9 @@ const Tours = () => {
 
   useEffect(() => {
     if (tours) {
-      let sortedArray = [...tours];
+      let filteredTours = tours.filter(tour => tour.featured === true);
+
+      let sortedArray = [...filteredTours];
       if (sortCriteria === 'location') {
         sortedArray.sort((a, b) => a.city.localeCompare(b.city));
       }
@@ -33,6 +35,7 @@ const Tours = () => {
       setSortedTours(sortedArray);
     }
   }, [tours, sortCriteria]);
+
 
   // Get current tours
   const indexOfLastTour = currentPage * toursPerPage;

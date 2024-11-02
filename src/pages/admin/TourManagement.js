@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button, Table, Form, Modal } from "react-bootstrap";
+import { Button, Table, Form, Modal, Alert } from "react-bootstrap";
 import "../../styles/TourManagement.css";
 import axios from "axios";
 import Pagination from "../../components/Page"; // Import the Pagination component
@@ -12,6 +12,8 @@ function TourManagement() {
   const [selectedTour, setSelectedTour] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [toursPerPage] = useState(8);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -24,10 +26,12 @@ function TourManagement() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data.data); // Kiểm tra dữ liệu ở đây
         setTours(data.data);
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        console.error(error);
+        setError("Failed to load tours.");
+      });
   }, []);
 
   const handleDeleteTour = (id) => {
@@ -38,52 +42,65 @@ function TourManagement() {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Could not delete tour.");
+        }
+        return response.json();
+      })
       .then(() => {
         setTours(tours.filter((tour) => tour._id !== id));
+        setSuccessMessage("Tour deleted successfully.");
+        setError(null);
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        console.error(error);
+        setError("Error deleting tour.");
+        setSuccessMessage("");
+      });
   };
 
-  const handleToggleFeatured = id => {
+  const handleToggleFeatured = (id) => {
     const token = localStorage.getItem("accessToken");
-    const tour = tours.find(t => t._id === id);
-  
+    const tour = tours.find((t) => t._id === id);
+
     if (!tour) {
-      console.error(`Tour with id ${id} not found!`);
+      setError(`Tour with id ${id} not found!`);
       return;
     }
-  
+
     fetch(`http://localhost:8000/api/v1/tours/${id}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ 
-        featured: !tour.featured, 
-        location: tour.location // Đảm bảo rằng bạn gửi lại location
+      body: JSON.stringify({
+        featured: !tour.featured,
+        location: tour.location, // Ensure location is sent
       }),
     })
-    .then(response => {
-      if (!response.ok) {
-        return response.json().then(err => {
-          throw new Error(`Error ${response.status}: ${err.message}`);
-        });
-      }
-      return response.json();
-    })
-    .then(updatedTour => {
-      setTours(tours.map(t => (t._id === id ? updatedTour.data : t)));
-    })
-    .catch(error => {
-      console.error('Error occurred:', error);
-    });
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((err) => {
+            throw new Error(`Error ${response.status}: ${err.message}`);
+          });
+        }
+        return response.json();
+      })
+      .then((updatedTour) => {
+        setTours(tours.map((t) => (t._id === id ? updatedTour.data : t)));
+        setSuccessMessage(
+          `Tour ${tour.featured ? "deactivated" : "activated"} successfully.`
+        );
+        setError(null);
+      })
+      .catch((error) => {
+        console.error("Error occurred:", error);
+        setError("Failed to toggle activation status.");
+        setSuccessMessage("");
+      });
   };
-  
-  
-
-  
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -117,7 +134,10 @@ function TourManagement() {
 
   return (
     <div className="tours-container p-6 bg-gray-100">
-      <h2 className="text-2xl font-bold mb-4">Tours Management</h2>
+      <h2 className="text-2xl font-bold mb-4">Hotels Management</h2>
+
+      {error && <Alert variant="danger">{error}</Alert>}
+      {successMessage && <Alert variant="success">{successMessage}</Alert>}
 
       <Form.Control
         type="text"
@@ -135,9 +155,8 @@ function TourManagement() {
             <th>Address</th>
             <th>Distance</th>
             <th>Price</th>
-            <th>Featured</th>
+            <th>Active</th>
             <th>Actions</th>
-            <th>Delete</th>
           </tr>
         </thead>
         <tbody>
@@ -173,14 +192,13 @@ function TourManagement() {
                   <Link to={`/update-tour/${tour._id}`}>
                     <Button variant="warning">Update</Button>
                   </Link>
-                </td>
-                <td>
-                  <Button
+                  {/* <Button
                     variant="danger"
                     onClick={() => handleDeleteTour(tour._id)}
+                    className="ml-2"
                   >
                     Delete
-                  </Button>
+                  </Button> */}
                 </td>
               </tr>
             ))
@@ -194,7 +212,7 @@ function TourManagement() {
 
       <Link to="/create-tour">
         <Button variant="primary" className="mb-3">
-          Create Tour
+          Create Hotel
         </Button>
       </Link>
 
@@ -205,7 +223,7 @@ function TourManagement() {
         currentPage={currentPage}
       />
 
-      {/* Modal để hiển thị chi tiết tour */}
+      {/* Modal to display tour details */}
       {selectedTour && (
         <Modal show={showModal} onHide={handleCloseModal}>
           <Modal.Header closeButton>
@@ -218,19 +236,10 @@ function TourManagement() {
               style={{ width: "100%" }}
             />
             <p>{selectedTour.desc ? selectedTour.desc : "No description available"}</p>
-
-            <p>
-              <strong>Address:</strong> {selectedTour.address ? selectedTour.address : "No address available"}
-            </p>
-            <p>
-              <strong>Distance:</strong> {selectedTour.distance ? `${selectedTour.distance} km` : "No distance available"}
-            </p>
-            <p>
-              <strong>Max Group Size:</strong> {selectedTour.maxGroupSize || "N/A"}
-            </p>
-            <p>
-              <strong>Price:</strong> ${selectedTour.price || "N/A"}
-            </p>
+            <p><strong>Address:</strong> {selectedTour.address || "No address available"}</p>
+            <p><strong>Distance:</strong> {selectedTour.distance ? `${selectedTour.distance} km` : "No distance available"}</p>
+            <p><strong>Max Group Size:</strong> {selectedTour.maxGroupSize || "N/A"}</p>
+            <p><strong>Price:</strong> ${selectedTour.price || "N/A"}</p>
 
             {selectedTour.reviews && selectedTour.reviews.length > 0 ? (
               <div>

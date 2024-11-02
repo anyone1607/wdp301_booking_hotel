@@ -26,6 +26,9 @@ const TourList = () => {
     fetchTours();
   }, [city]);
 
+  // Lọc ra các tours có featured là true
+  const filteredTours = tours.filter((tour) => tour.featured === true);
+
   if (loading) {
     return <p className="text-center text-lg">Loading tours...</p>;
   }
@@ -36,14 +39,16 @@ const TourList = () => {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <h2 className="text-2xl font-semibold text-center mb-6">Tours in {city}</h2>
+      <h2 className="text-2xl font-semibold text-center mb-6">Hotels in {city}</h2>
       <div className="grid gap-6 md:grid-cols-3">
-        {tours.length > 0 ? (
-          tours.map((tour) => (
+        {filteredTours.length > 0 ? (
+          filteredTours.map((tour) => (
             <TourCard key={tour._id} tour={tour} />
           ))
         ) : (
-          <p className="text-center text-gray-500">No tours available for this city</p>
+          <p className="text-center text-gray-500">
+            No featured tours available for this city
+          </p>
         )}
       </div>
     </div>

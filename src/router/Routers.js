@@ -22,7 +22,6 @@ import TourManagement from "../pages/admin/TourManagement";
 import BookingManagement from "../pages/admin/BookingManagement";
 import CreateTour from "../pages/admin/CreateTour";
 import UpdateTour from "../pages/admin/UpdateTour";
-import ContactManagement from "../pages/admin/ContactMangement";
 import ProtectedRoute from "./ProtectedRoute";
 import { AuthContext } from "../context/AuthContext";
 import AdminLayout from "../components/Layout/AdminLayout";
@@ -40,10 +39,12 @@ import CreateExtrafees from "../pages/admin/CreateExtrafees";
 import UpdateExtrafees from "../pages/admin/UpdateExtrafees";
 import PaymentSuccessAdmin from "../pages/admin/SuccessAdmin";
 import PaymentCancelAdmin from "../pages/admin/CancelAdmin";
+import ContactManagement from "../pages/admin/ContactMangement";
+
 const Routers = () => {
   const { user } = useContext(AuthContext);
   const isAdminOrManager =
-    user && (user.role === "admin" || user.role === "manager"); // Kiểm tra người dùng là admin hoặc manager
+    user && (user.role === "admin" || user.role === "staff"); // Kiểm tra người dùng là admin hoặc manager
 
   // Sử dụng useLocation để lấy đường dẫn hiện tại
   const location = useLocation();
@@ -52,14 +53,17 @@ const Routers = () => {
   const hideHeaderFooter =
     location.pathname.startsWith("/dashboard") ||
     location.pathname.startsWith("/user-management") ||
-    location.pathname.startsWith("/tour-management") ||
+    location.pathname.startsWith("/hotel-management") ||
     location.pathname.startsWith("/booking-management") ||
     location.pathname.startsWith("/create-tour") ||
     location.pathname.startsWith("/update-tour") ||
     location.pathname.startsWith("/create-room") ||
     location.pathname.startsWith("/update-room") ||
-
-    location.pathname.startsWith("/contact-management");
+    location.pathname.startsWith("/contact-management") ||
+    location.pathname.startsWith("/location-management") ||
+    location.pathname.startsWith("/extrafees-management")||
+    location.pathname.startsWith("/room-management");
+    ;
 
   return (
     <>
@@ -86,9 +90,9 @@ const Routers = () => {
         <Route path="/successed/:bookingId" element={<PaymentSuccess />} />
         <Route path="/cancel" element={<PaymentCancel />} />
 
+        
         {/* Location router */}
-
-        <Route path="/location" element={<Location />}></Route>
+        <Route path="/location" element={<Location />} />
         <Route path="/tours/city/:city" element={<TourList />} />
 
         {/* Admin & Manager Routes */}
@@ -98,7 +102,7 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<DashboardPage />}
-                allowedRoles={["admin", "manager"]}
+                allowedRoles={["admin"]}
               />
             }
           />
@@ -112,7 +116,7 @@ const Routers = () => {
             }
           />
           <Route
-            path="/tour-management"
+            path="/hotel-management"
             element={
               <ProtectedRoute
                 element={<TourManagement />}
@@ -125,7 +129,7 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<BookingManagement />}
-                allowedRoles={["admin", "manager"]}
+                allowedRoles={["admin", "staff"]}
               />
             }
           />
@@ -175,15 +179,6 @@ const Routers = () => {
             }
           />
           <Route
-            path="/update-room/:id"
-            element={
-              <ProtectedRoute
-                element={<UpdateTour />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />
-          <Route
             path="/update-extrafee/:id"
             element={
               <ProtectedRoute
@@ -196,18 +191,17 @@ const Routers = () => {
             path="/contact-management"
             element={
               <ProtectedRoute
-                element={<ContactManagement />}
-                allowedRoles={["admin"]}
+                element={<ContactManagement/>}
+                allowedRoles={["admin", "staff"]}
               />
             }
           />
-
           <Route
             path="/location-management"
             element={
               <ProtectedRoute
                 element={<LocationManagement />}
-              // allowedRoles={["admin"]}
+                allowedRoles={["admin"]}
               />
             }
           />
@@ -216,7 +210,7 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<RoomManagement />}
-              // allowedRoles={["admin"]}
+                allowedRoles={["admin"]}
               />
             }
           />
@@ -225,7 +219,7 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<ExtrafeesManagement />}
-              // allowedRoles={["admin"]}
+                allowedRoles={["admin"]}
               />
             }
           />
@@ -234,7 +228,7 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<PaymentSuccessAdmin />}
-              // allowedRoles={["admin"]}
+                allowedRoles={["admin"]}
               />
             }
           />
@@ -243,7 +237,7 @@ const Routers = () => {
             element={
               <ProtectedRoute
                 element={<PaymentCancelAdmin />}
-              // allowedRoles={["admin"]}
+                allowedRoles={["admin"]}
               />
             }
           />
@@ -257,4 +251,5 @@ const Routers = () => {
     </>
   );
 };
+
 export default Routers;

@@ -70,9 +70,9 @@ function CreateTour() {
             const result = await response.json();
 
             if (result.success && result.data) {
-                navigate('/tour-management');
+                navigate('/hotel-management');
             } else {
-                console.error("Failed to create tour", result);
+                console.error("Failed to create hotel", result);
             }
         } catch (error) {
             console.error("Error creating tour:", error);
@@ -86,7 +86,7 @@ function CreateTour() {
 
     return (
         <div className="container mt-5">
-            <h2 className="title text-center mb-4">Create Tour</h2>
+            <h2 className="title text-center mb-4">Create Hotel</h2>
             <Form onSubmit={handleSubmit}>
                 <Card className="p-4 shadow-sm">
                     <Row>
@@ -151,7 +151,7 @@ function CreateTour() {
                                     required
                                 />
                             </Form.Group>
-
+{/* 
                             <Form.Group className="mb-3" controlId="formPrice">
                                 <Form.Label>Price ($)</Form.Label>
                                 <Form.Control
@@ -161,7 +161,7 @@ function CreateTour() {
                                     onChange={handleInputChange}
                                     required
                                 />
-                            </Form.Group>
+                            </Form.Group> */}
                         </Col>
                         <Col md={6} className="d-flex justify-content-center align-items-center">
                             {/* Hiển thị hình ảnh nếu có */}
@@ -189,7 +189,7 @@ function CreateTour() {
 
                     <div className="text-center">
                         <Button variant="primary" type="submit" className="px-5">
-                            Create Tour
+                            Create Hotel
                         </Button>
                     </div>
                 </Card>

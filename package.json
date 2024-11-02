@@ -13,6 +13,7 @@
     "json": "^11.0.0",
     "json-server": "^1.0.0-alpha.23",
     "nanoid": "^5.0.7",
+    "notiflix": "^3.2.7",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.4",
     "react-chartjs-2": "^5.2.0",

@@ -12,26 +12,29 @@ function RoomManagement() {
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [roomCategoriesPerPage] = useState(8);
-  
+
     useEffect(() => {
         const fetchRoomCategories = async () => {
             const token = localStorage.getItem("accessToken");
             try {
-                const response = await fetch("http://localhost:8000/api/v1/roomCategory", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                const response = await fetch(
+                    "http://localhost:8000/api/v1/roomCategory",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
                 const data = await response.json();
                 setRoomCategories(data); // Đảm bảo rằng dữ liệu trả về đúng cấu trúc
             } catch (error) {
                 console.error(error);
             }
         };
-  
+
         fetchRoomCategories();
     }, []);
-  
+
     const handleDeleteRoomCategory = (id) => {
         const token = localStorage.getItem("accessToken");
         fetch(`http://localhost:8000/api/v1/roomCategory/${id}`, {
@@ -46,21 +49,21 @@ function RoomManagement() {
             })
             .catch((error) => console.error(error));
     };
-  
+
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value);
     };
-  
+
     const handleShowModal = (room) => {
         setSelectedRoom(room);
         setShowModal(true);
     };
-  
+
     const handleCloseModal = () => {
         setShowModal(false);
         setSelectedRoom(null);
     };
-  
+
     const filteredRoomCategories = roomCategories.filter((room) =>
         room.roomName.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -68,7 +71,10 @@ function RoomManagement() {
     // Get current room categories
     const indexOfLastRoom = currentPage * roomCategoriesPerPage;
     const indexOfFirstRoom = indexOfLastRoom - roomCategoriesPerPage;
-    const currentRoomCategories = filteredRoomCategories.slice(indexOfFirstRoom, indexOfLastRoom);
+    const currentRoomCategories = filteredRoomCategories.slice(
+        indexOfFirstRoom,
+        indexOfLastRoom
+    );
 
     // Change page
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -91,6 +97,7 @@ function RoomManagement() {
             <Table striped bordered hover>
                 <thead className="bg-gray-200">
                     <tr>
+                        <th>Photo room</th>
                         <th>Hotel</th>
                         <th>Room Name</th>
                         <th>Price</th>
@@ -98,17 +105,28 @@ function RoomManagement() {
                         <th>Quantity</th>
                         <th>Status</th>
                         <th>Actions</th>
-                        <th>Delete</th>
+
+                        {/* <th>Delete</th> */}
                     </tr>
                 </thead>
                 <tbody>
-                    {Array.isArray(currentRoomCategories) && currentRoomCategories.length > 0 ? (
+                    {Array.isArray(currentRoomCategories) &&
+                        currentRoomCategories.length > 0 ? (
                         currentRoomCategories.map((room) => (
                             <tr key={room._id} className="bg-white hover:bg-gray-50">
+                                <td onClick={() => handleShowModal(room)}>
+                                    <img
+                                        src={room.photo}
+                                        alt={room.title}
+                                        style={{ width: "70px" }}
+                                    />
+                                </td>
                                 <td>{room.hotelId ? room.hotelId.title : "No Hotel"}</td>
                                 <td onClick={() => handleShowModal(room)}>{room.roomName}</td>
                                 <td onClick={() => handleShowModal(room)}>${room.roomPrice}</td>
-                                <td onClick={() => handleShowModal(room)}>{room.maxOccupancy}</td>
+                                <td onClick={() => handleShowModal(room)}>
+                                    {room.maxOccupancy}
+                                </td>
                                 <td onClick={() => handleShowModal(room)}>{room.quantity}</td>
                                 <td>{room.status}</td>
                                 <td>
@@ -116,19 +134,21 @@ function RoomManagement() {
                                         <Button variant="warning">Update</Button>
                                     </Link>
                                 </td>
-                                <td>
+                                {/* <td>
                                     <Button
                                         variant="danger"
                                         onClick={() => handleDeleteRoomCategory(room._id)}
                                     >
                                         Delete
                                     </Button>
-                                </td>
+                                </td> */}
                             </tr>
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="8" className="text-center">No room categories found</td>
+                            <td colSpan="8" className="text-center">
+                                No room categories found
+                            </td>
                         </tr>
                     )}
                 </tbody>
@@ -149,7 +169,7 @@ function RoomManagement() {
 
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{selectedRoom ? selectedRoom.roomName : ''}</Modal.Title>
+                    <Modal.Title>{selectedRoom ? selectedRoom.roomName : ""}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {selectedRoom && (

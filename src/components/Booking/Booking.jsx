@@ -69,8 +69,12 @@ const Booking = ({ tour, avgRating }) => {
                axios.get(`${BASE_URL}/booking/availability/${hotelId}/${booking.bookAt}/${booking.checkOut}`, { withCredentials: true }),
             ]);
 
-            setRoomCategories(responseRC.data);
-            setExtraFee(responseET.data.data);
+            // Filter room categories by status 'active'
+            const activeRoomCategories = responseRC.data.filter(room => room.status === 'active');
+            const activeExtraFee = responseET.data.data.filter(extra => extra.status === 'active');
+
+            setRoomCategories(activeRoomCategories);
+            setExtraFee(activeExtraFee);
             setAvailableRoomCounts(responseAvailability.data.availableRooms);
          } catch (error) {
             console.error("Lỗi khi lấy dữ liệu:", error);
@@ -79,6 +83,7 @@ const Booking = ({ tour, avgRating }) => {
 
       fetchData();
    }, [hotelId, booking.bookAt, booking.checkOut]);
+
 
    const handleChange = e => {
       const { id, value } = e.target;
@@ -92,7 +97,7 @@ const Booking = ({ tour, avgRating }) => {
       if (id === 'email') {
          const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
          if (!emailPattern.test(value)) {
-            setErrors(prev => ({ ...prev, email: 'Email không hợp lệ.' }));
+            setErrors(prev => ({ ...prev, email: 'Invalid email' }));
          } else {
             setErrors(prev => ({ ...prev, email: '' }));
          }
@@ -101,7 +106,7 @@ const Booking = ({ tour, avgRating }) => {
       // Validation for date fields
       if (id === 'bookAt') {
          if (selectedDate < today.setHours(0, 0, 0, 0)) {
-            setErrors(prev => ({ ...prev, bookAt: 'Ngày đặt phòng không được trong quá khứ.' }));
+            setErrors(prev => ({ ...prev, bookAt: 'The booking date cannot be in the past.' }));
          } else {
             setErrors(prev => ({ ...prev, bookAt: '' }));
          }
@@ -111,7 +116,7 @@ const Booking = ({ tour, avgRating }) => {
          const diffTime = selectedDate - bookAtDate;
          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Số ngày chênh lệch
          if (diffDays < 1) {
-            setErrors(prev => ({ ...prev, checkOut: 'Ngày trả phòng phải sau ngày đặt ít nhất 1 ngày.' }));
+            setErrors(prev => ({ ...prev, checkOut: 'Check-out date must be at least 1 day after booking date.' }));
          } else {
             setErrors(prev => ({ ...prev, checkOut: '' }));
          }
@@ -137,7 +142,7 @@ const Booking = ({ tour, avgRating }) => {
          }
       }
 
-      if (['adult', 'children', 'baby'].includes(id)) {
+      if (['adult'].includes(id)) {
          if (value < 0) {
             setErrors(prev => ({ ...prev, [id]: `${id} must be at least 0.` }));
          } else {
@@ -212,7 +217,7 @@ const Booking = ({ tour, avgRating }) => {
             });
             window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
          } else {
-            console.error("Failed to create payment link");
+            console.error("Failed to create booking");
          }
       } catch (error) {
          console.error("Error creating payment link:", error);
@@ -248,7 +253,8 @@ const Booking = ({ tour, avgRating }) => {
                hotelId,          // Cập nhật hotelId
                roomIds,          // Cập nhật roomIds
                extraIds: selectedExtras,  // Cập nhật extraIds bằng selectedExtras
-               totalAmount       // Cập nhật tổng số tiền
+               totalAmount,
+               status: "confirmed"       // Cập nhật tổng số tiền
             };
 
             // Gửi request với bookingTemp
@@ -257,7 +263,7 @@ const Booking = ({ tour, avgRating }) => {
             const result = res.data.data;
 
 
-            console.log(result)
+            // console.log(result)
             // Điều hướng sau khi tạo booking thành công
             // navigate('/thank-you');
             // navigate('/my-booking');
@@ -270,16 +276,31 @@ const Booking = ({ tour, avgRating }) => {
 
 
    const validateBeforeSubmit = () => {
+      // Check if at least one adult is included
       if (booking.adult < 1) {
          alert('At least one adult must be included.');
          return false;
       }
+
+      // Check if booking and check-out dates are selected
       if (!booking.bookAt || !booking.checkOut) {
          alert('Please select booking and check-out dates.');
          return false;
       }
+
+
+      // Check if at least one room has a quantity greater than 0
+      const hasRoomSelected = Object.values(selectedRooms).some(quantity => quantity > 0);
+
+      if (!hasRoomSelected) {
+         alert('At least one room with quantity greater than 0 is required.');
+         return false;
+      }
+
+      // All validations passed
       return true;
    };
+
 
    return (
       <div className='booking'>
@@ -296,17 +317,17 @@ const Booking = ({ tour, avgRating }) => {
             <Form className='booking__info-form' onSubmit={handleClick}>
                <FormGroup>
                   <input type="text" placeholder='Full Name' id='name' required onChange={handleChange} />
-                  {errors.name && <span className="error">{errors.name}</span>}
+                  {errors.name && <span className="error text-danger">{errors.name}</span>}
                </FormGroup>
 
                <FormGroup>
                   <input type="tel" placeholder='Phone' id='phone' required onChange={handleChange} />
-                  {errors.phone && <span className="error">{errors.phone}</span>}
+                  {errors.phone && <span className="error text-danger">{errors.phone}</span>}
                </FormGroup>
 
                <FormGroup>
                   <input type="email" placeholder='Email' id='email' required onChange={handleChange} />
-                  {errors.email && <span className="error">{errors.email}</span>}
+                  {errors.email && <span className="error text-danger">{errors.email}</span>}
                </FormGroup>
 
                <FormGroup>

@@ -56,8 +56,8 @@ const Login = () => {
             // Điều hướng dựa trên vai trò của người dùng
             if (result.data.role === 'admin') {
                 navigate('/dashboard'); // Điều hướng admin và manager đến trang dashboard
-            } else if (result.data.role === 'manager') {
-                navigate('/booking-management');
+            } else if (result.data.role === 'staff') {
+                navigate('/');
             }
             else {
                 navigate('/'); // Điều hướng user bình thường đến trang home

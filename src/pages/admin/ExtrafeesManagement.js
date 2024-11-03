@@ -100,7 +100,7 @@ function ExtrafeesManagement() {
             <th>Price</th>
             <th>Status</th>
             <th>Actions</th>
-            <th>Delete</th>
+            {/* <th>Delete</th> */}
           </tr>
         </thead>
         <tbody>
@@ -124,14 +124,14 @@ function ExtrafeesManagement() {
                     <Button variant="warning">Update</Button>
                   </Link>
                 </td>
-                <td>
+                {/* <td>
                   <Button
                     variant="danger"
                     onClick={() => handleDeleteExtrafee(extrafee._id)}
                   >
                     Delete
                   </Button>
-                </td>
+                </td> */}
               </tr>
             ))
           ) : (

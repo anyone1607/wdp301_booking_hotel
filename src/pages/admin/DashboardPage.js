@@ -70,17 +70,21 @@ function DashboardPage() {
     return acc + booking.adult + booking.children + booking.baby;
   }, 0);
 
-  const totalRevenue = confirmedBookings.reduce((acc, booking) => {
-    const tour = tours.find((tour) => tour.title === booking.tourName);
-    return (
-      acc +
-      (tour
-        ? tour.price * (booking.adult + booking.children + booking.baby)
-        : 0)
-    );
+  // const totalRevenue = confirmedBookings.reduce((acc, booking) => {
+  //   const tour = tours.find((tour) => tour.title === booking.tourName);
+  //   return (
+  //     acc +
+  //     (tour
+  //       ? tour.price * (booking.adult + booking.children + booking.baby)
+  //       : 0)
+  //   );
 
-    return acc;
-  }, 0);
+  //   return acc;
+  // }, 0);
+  const totalRevenue = confirmedBookings.reduce(
+    (acc, booking) => acc + (booking?.totalAmount || 0),
+    0
+  );
 
   const totalTours = confirmedBookings.length;
 

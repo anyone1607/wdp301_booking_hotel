@@ -113,7 +113,7 @@ function TableBooking({ data }) {
             booking._id === bookingId ? { ...booking, status: "cancelled" } : booking
           )
         );
-        toast.success("Booking status updated to cancelled");
+        toast.success("Booking status updated to cancelled"); // Thêm thông báo thành công
       } else {
         toast.error("Failed to update booking status");
       }
@@ -123,6 +123,7 @@ function TableBooking({ data }) {
       toast.error("An error occurred while updating the booking status");
     }
   };
+
 
 
 

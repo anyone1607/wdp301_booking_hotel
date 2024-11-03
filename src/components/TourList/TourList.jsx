@@ -62,8 +62,13 @@ const TourList = () => {
           })
         );
 
-        setHotels(availableHotels.filter(Boolean));
-        setFilteredHotels(availableHotels.filter(Boolean)); // Initialize filtered hotels
+        // Apply filter for featured hotels
+        const featuredHotels = availableHotels.filter(
+          (hotel) => hotel.featured === true
+        );
+
+        setHotels(featuredHotels);
+        setFilteredHotels(featuredHotels); // Initialize filtered hotels to only featured ones
       } catch (err) {
         console.error("Error fetching tours:", err);
         setError("Failed to fetch tours");
@@ -75,6 +80,9 @@ const TourList = () => {
     fetchTours();
   }, [city, bookAt, checkOut]);
 
+
+  // Lọc ra các tours có featured là true
+  // const filteredHotelActive = hotels.filter((hotel) => hotel.featured === true);
   // Function to filter hotels based on selected price range and hotel name
   const filterHotels = () => {
     const filtered = hotels.filter(hotel => {

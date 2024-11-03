@@ -16,7 +16,7 @@ function CardItem({ totalTours, totalGuests, totalRevenue }) {
               </div>
               <div className="col-7 col-md-8">
                 <div className="numbers">
-                  <p className="card-category">Total Tours</p>
+                  <p className="card-category">Total Hotels</p>
                   <p className="card-title" style={{ fontSize: "24px" }}>
                     {totalTours}
                   </p>

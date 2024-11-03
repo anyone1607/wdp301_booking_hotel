@@ -6,7 +6,7 @@ const ChartCustom = () => {
   const [data, setData] = useState({
     revenue: [],
     guests: [],
-    tours: [],
+    roomIds: [],
     labels: [],
   });
   const [loading, setLoading] = useState(true);
@@ -34,11 +34,6 @@ const ChartCustom = () => {
           throw new Error("Invalid data format");
         }
 
-        const tourPrices = toursData.data.reduce((acc, tour) => {
-          acc[tour.title] = tour.price;
-          return acc;
-        }, {});
-
         const monthlyData = {};
 
         bookingsData.data.forEach((booking) => {
@@ -51,15 +46,16 @@ const ChartCustom = () => {
             monthlyData[key] = {
               revenue: 0,
               guests: 0,
-              tours: 0,
+              roomIds: 0,
             };
           }
 
-          const tourName = booking.tourName;
           const guestSize = booking.adult;
-          monthlyData[key].revenue += booking.price;
+          monthlyData[key].revenue += booking.totalAmount;
           monthlyData[key].guests += guestSize;
-          monthlyData[key].tours += 1;
+
+          // Safely add the length of roomIds if it's an array
+          monthlyData[key].roomIds += Array.isArray(booking.roomIds) ? booking.roomIds.length : 0;
         });
 
         const labels = Object.keys(monthlyData).sort((a, b) => {
@@ -73,7 +69,7 @@ const ChartCustom = () => {
         setData({
           revenue: labels.map((label) => monthlyData[label].revenue),
           guests: labels.map((label) => monthlyData[label].guests),
-          tours: labels.map((label) => monthlyData[label].tours),
+          roomIds: labels.map((label) => monthlyData[label].roomIds),
           labels,
         });
 
@@ -108,7 +104,7 @@ const ChartCustom = () => {
     labels: data.labels,
     datasets: [
       {
-        label: "Tổng số lượng người đi",
+        label: "Tổng số lượng người đặt",
         data: data.guests,
         borderColor: "rgba(153, 102, 255, 1)",
         backgroundColor: "rgba(153, 102, 255, 0.2)",
@@ -117,12 +113,12 @@ const ChartCustom = () => {
     ],
   };
 
-  const toursChartData = {
+  const roomsChartData = {
     labels: data.labels,
     datasets: [
       {
-        label: "Tổng số tour đã được book",
-        data: data.tours,
+        label: "Tổng số phòng đã được đặt",
+        data: data.roomIds,
         borderColor: "rgba(255, 159, 64, 1)",
         backgroundColor: "rgba(255, 159, 64, 0.2)",
         fill: false,
@@ -135,7 +131,7 @@ const ChartCustom = () => {
       <div className="col-md-12">
         <div className="card">
           <div className="card-header">
-            <h5 className="card-title">Travel Dashboard</h5>
+            <h5 className="card-title">Hotels Dashboard</h5>
           </div>
           <div className="card-body">
             <h6>Revenue</h6>
@@ -166,10 +162,10 @@ const ChartCustom = () => {
               key={JSON.stringify(guestsChartData)}
             />
             <hr />
-            <h6>Booked Tours</h6>
+            <h6>Booked Rooms</h6>
             <Line
               ref={chartRef}
-              data={toursChartData}
+              data={roomsChartData}
               options={{
                 scales: {
                   y: {
@@ -177,7 +173,7 @@ const ChartCustom = () => {
                   },
                 },
               }}
-              key={JSON.stringify(toursChartData)}
+              key={JSON.stringify(roomsChartData)}
             />
           </div>
           <div className="card-footer">

@@ -14,29 +14,39 @@ const ChartCustom = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
 
       try {
-        const toursResponse = await fetch("http://localhost:8000/api/v1/tours", {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        });
+        // Fetch tours and bookings in parallel
+        const [toursResponse, bookingsResponse] = await Promise.all([
+          fetch("http://localhost:8000/api/v1/tours", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch("http://localhost:8000/api/v1/booking", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
         const toursData = await toursResponse.json();
-        const bookingsResponse = await fetch("http://localhost:8000/api/v1/booking", {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        });
         const bookingsData = await bookingsResponse.json();
 
-        if (!toursData.data || !bookingsData.data) {
-          throw new Error("Invalid data format");
+        // Verify data structure and access confirmed bookings
+        const tours = toursData.data || [];
+        const bookings = bookingsData.data || []; // Adjust if bookings are nested in a "data" property
+
+        // Filter for confirmed bookings
+        const confirmedBookings = bookings.filter(
+          (booking) => booking.status === "confirmed"
+        );
+
+        if (!tours.length || !confirmedBookings.length) {
+          throw new Error("No tours or confirmed bookings available");
         }
 
         const monthlyData = {};
 
-        bookingsData.data.forEach((booking) => {
+        // Process each booking
+        confirmedBookings.forEach((booking) => {
           const date = new Date(booking.bookAt || booking.createdAt);
           const month = date.toLocaleString("default", { month: "short" });
           const year = date.getFullYear();
@@ -50,14 +60,17 @@ const ChartCustom = () => {
             };
           }
 
-          const guestSize = booking.adult;
-          monthlyData[key].revenue += booking.totalAmount;
-          monthlyData[key].guests += guestSize;
-
-          // Safely add the length of roomIds if it's an array
-          monthlyData[key].roomIds += Array.isArray(booking.roomIds) ? booking.roomIds.length : 0;
+          // Update monthly data
+          const totalGuests =
+            (booking.adult || 0) + (booking.children || 0) + (booking.baby || 0);
+          monthlyData[key].revenue += booking.totalAmount || 0;
+          monthlyData[key].guests += totalGuests;
+          monthlyData[key].roomIds += Array.isArray(booking.roomIds)
+            ? booking.roomIds.length
+            : 0;
         });
 
+        // Generate sorted labels and data for the chart
         const labels = Object.keys(monthlyData).sort((a, b) => {
           const [monthA, yearA] = a.split("-");
           const [monthB, yearB] = b.split("-");
@@ -66,6 +79,7 @@ const ChartCustom = () => {
           return dateA - dateB;
         });
 
+        // Set data for chart
         setData({
           revenue: labels.map((label) => monthlyData[label].revenue),
           guests: labels.map((label) => monthlyData[label].guests),

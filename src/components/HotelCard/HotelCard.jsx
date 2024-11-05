@@ -99,12 +99,7 @@ const HotelCard = ({ searchQuery }) => {
 
             <div className="relative px-4 py-2 flex items-center justify-between">
               <div className="flex items-center text-xs text-gray-500">
-                <FaMapMarkerAlt className="text-yellow-600 mr-1" />
-                <span>
-                  {location.distance
-                    ? `${location.distance} km`
-                    : "Unknown distance"}
-                </span>
+               
               </div>
               <Link
                 to={`/tours/city/${location.city}`}

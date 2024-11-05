@@ -21,7 +21,8 @@ import { BASE_URL } from "../../utils/config";
 import { AuthContext } from "../../context/AuthContext";
 import axios from "axios";
 import Swal from "sweetalert2";
-
+import { RiStarFill, RiMapPinFill, RiMapPin2Line, RiPinDistanceFill } from "react-icons/ri"; // Importing icons
+import { FaDollarSign, FaHotel, FaInfoCircle, FaUserFriends } from "react-icons/fa";
 const TourDetails = () => {
   const { id } = useParams();
   const reviewMsgRef = useRef("");
@@ -166,84 +167,111 @@ const TourDetails = () => {
               <div className="tour__content">
                 <img src={photo} alt="" />
 
-                <div className="tour__info">
-                  <h2>{title}</h2>
-                  <div className="d-flex align-items-center gap-5">
-                    <span className="tour__rating d-flex align-items-center gap-1">
-                      <i
-                        className="ri-star-fill"
-                        style={{ color: "var(--secondary-color)" }}
-                      ></i>{" "}
-                      {avgRating === 0 ? null : avgRating}
-                      {avgRating === 0 ? (
-                        "Not rated"
-                      ) : (
-                        <span>({reviews?.length})</span>
-                      )}
-                    </span>
+               
+<div className="tour__info" style={{ padding: "20px", color: "#333" }}>
+  <h2 style={{ display: "flex", alignItems: "center", fontSize: "1.5rem", fontWeight: "600", marginBottom: "10px", gap: "8px" }}>
+    <FaHotel style={{ fontSize: "1.4rem", color: "#007bff" }} />
+    {title}
+  </h2>
+  <div className="d-flex align-items-center gap-4" style={{ marginBottom: "12px", fontSize: "0.9rem", color: "#555" }}>
+    {/* Rating Section */}
+    <span className="tour__rating d-flex align-items-center gap-1" style={{ color: "#FFCC00" }}>
+      <RiStarFill style={{ fontSize: "1.2rem", color: "#FFCC00" }} />
+      {avgRating > 0 ? avgRating : "Not rated"}
+      {avgRating > 0 && <span style={{ color: "#555" }}>({reviews?.length})</span>}
+    </span>
 
-                    <span>
-                      <i className="ri-map-pin-fill"></i> {address}
-                    </span>
-                  </div>
-                  <div className="tour__extra-details">
-                    <span>
-                      <i className="ri-map-pin-2-line"></i> {city}
-                    </span>
-                    <span>
-                      <i className="ri-map-pin-time-line"></i> {distance} km
-                    </span>
-                  </div>
-                  <h5>Description</h5>
-                  <p>{desc}</p>
-                </div>
+    {/* Address Section */}
+    <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+      <RiMapPinFill style={{ fontSize: "1.2rem", color: "#ff7f50" }} />
+      <span>{address}</span>
+    </span>
+  </div>
+
+  {/* Extra Details Section */}
+  <div className="tour__extra-details" style={{ display: "flex", gap: "15px", fontSize: "0.9rem", color: "#555", marginBottom: "12px" }}>
+    <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+      <RiMapPin2Line style={{ fontSize: "1.1rem", color: "#007bff" }} />
+      {city}
+    </span>
+    <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+      <RiPinDistanceFill style={{ fontSize: "1.1rem", color: "#777" }} />
+      {distance} km
+    </span>
+  </div>
+
+  {/* Description Section */}
+  <h4 style={{ fontSize: "1.2rem", fontWeight: "600", marginTop: "15px", marginBottom: "8px", color: "#333" }}>{desc}</h4>
+</div>
+
 
                 {/* ============ Room Category Section START ============ */}
-                <div className="room-category-section mt-5">
-                  <h4>Room Categories</h4>
-                  <Row className="room-category-list">
-    {roomCategories.length > 0 ? (
-        roomCategories.map((category, index) => (
-            <Col lg="4" md="6" sm="12" key={index} className="mb-4">
-                <Card className="shadow-sm border-light" style={{ height: "100%" }}>
-                    <CardBody>
-                        <div className="text-center">
-                            <CardTitle tag="h5" className="font-weight-bold" style={{ fontSize: "1.25rem" }}> {/* Thay đổi kích thước chữ */}
-                                {category.roomName}
-                            </CardTitle>
-                            <img
-                                src={category.photo}
-                                alt="photo"
-                                style={{
-                                    width: "100%",
-                                    height: "120px",  // Điều chỉnh chiều cao
-                                    objectFit: "cover",
-                                    borderRadius: "10px",
-                                    marginBottom: "10px"
-                                }}
-                            />
-                        </div>
-                        <CardText style={{ fontSize: "0.875rem" }}> {/* Thay đổi kích thước chữ */}
-                            <strong>Price: </strong> {category.roomPrice} $
-                            <br />
-                            <strong>Max Occupancy: </strong><br />
-                            {category.maxOccupancy} persons
-                            <br />
-                            <strong>Description: </strong>{" "}
-                            {category.description}
-                        </CardText>
-                    </CardBody>
-                </Card>
-            </Col>
-        ))
-    ) : (
-        <p className="text-center" style={{ fontSize: "0.875rem" }}> {/* Thay đổi kích thước chữ */}
-            No room categories available for this hotel.
-        </p>
-    )}
-</Row>
 
+<div className="room-category-section mt-5" style={{ padding: "20px" }}>
+  <h4 style={{ fontSize: "1.75rem", fontWeight: "600", marginBottom: "20px", color: "#333" }}>Room Categories</h4>
+  
+  <Row className="room-category-list">
+    {roomCategories.length > 0 ? (
+      roomCategories.map((category, index) => (
+        <Col lg="4" md="6" sm="12" key={index} className="mb-4">
+          <Card className="shadow-sm border-light" style={{ height: "100%", borderRadius: "10px", overflow: "hidden" }}>
+            <CardBody style={{ padding: "15px" }}>
+              <div className="text-center">
+                {/* Room Name */}
+                <CardTitle
+                  tag="h5"
+                  className="font-weight-bold"
+                  style={{
+                    fontSize: "1.25rem",
+                    color: "#333",
+                    marginBottom: "15px",
+                  }}
+                >
+                  {category.roomName}
+                </CardTitle>
+
+                {/* Room Image */}
+                <img
+                  src={category.photo}
+                  alt="Room"
+                  style={{
+                    width: "100%",
+                    height: "140px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                    marginBottom: "15px",
+                  }}
+                />
+              </div>
+
+              {/* Room Details */}
+              <CardText style={{ fontSize: "0.9rem", color: "#555", lineHeight: "1.5" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                  <FaDollarSign style={{ color: "#28a745" }} />
+                   :{category.roomPrice}
                 </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                  <FaUserFriends style={{ color: "#007bff" }} />
+                  {category.maxOccupancy} persons / room
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <FaInfoCircle style={{ color: "#ff7f50" }} />
+                  <h6>{category.description}</h6>
+                </div>
+              </CardText>
+            </CardBody>
+          </Card>
+        </Col>
+      ))
+    ) : (
+      <p className="text-center" style={{ fontSize: "0.9rem", color: "#888", marginTop: "15px" }}>
+        No room categories available for this hotel.
+      </p>
+    )}
+  </Row>
+</div>
+
+
                 {/* ============ Room Category Section END ============ */}
 
                 {/* ============ TOUR REVIEWS SECTION START ============ */}

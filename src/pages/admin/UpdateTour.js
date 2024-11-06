@@ -179,7 +179,7 @@ function UpdateTour() {
                                 />
                             </Form.Group>
 
-                            <Form.Group className="mb-3" controlId="formPrice">
+                            {/* <Form.Group className="mb-3" controlId="formPrice">
                                 <Form.Label>Price ($)</Form.Label>
                                 <Form.Control
                                     type="number"
@@ -188,7 +188,7 @@ function UpdateTour() {
                                     onChange={handleInputChange}
                                     required
                                 />
-                            </Form.Group>
+                            </Form.Group> */}
                         </Col>
                         <Col md={6} className="d-flex justify-content-center align-items-center">
                             {/* Hiển thị hình ảnh nếu có */}

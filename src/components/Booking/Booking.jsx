@@ -57,7 +57,7 @@ const Booking = ({ tour, avgRating }) => {
       roomQuantity: '',
       email: '' // Add email validation error here
    });
-
+   const [reloadTrigger, setReloadTrigger] = useState(false); // State to trigger reload in useEffect
    useEffect(() => {
       if (!hotelId) return;
 
@@ -82,7 +82,7 @@ const Booking = ({ tour, avgRating }) => {
       };
 
       fetchData();
-   }, [hotelId, booking.bookAt, booking.checkOut]);
+   }, [hotelId, booking.bookAt, booking.checkOut, reloadTrigger]);
 
 
    const handleChange = e => {
@@ -229,13 +229,80 @@ const Booking = ({ tour, avgRating }) => {
       }
    };
 
+   // const handleClick = async (e) => {
+   //    // Toggle reloadTrigger to force re-fetching of data
+   //    setReloadTrigger(prev => !prev);
+   //    e.preventDefault();
+
+   //    if (validateBeforeSubmit()) {
+   //       try {
+   //          if (!user) {
+   //             return alert('Please sign in');
+   //          }
+
+   //          const totalAmount = calculateTotalAmount();
+   //          let roomIds = [];
+
+   //          Object.entries(selectedRooms).forEach(([roomId, quantity]) => {
+   //             for (let i = 0; i < quantity; i++) {
+   //                roomIds.push(roomId);
+   //             }
+   //          });
+
+   //          // Tạo biến bookingTemp để lưu giá trị booking
+   //          const bookingTemp = {
+   //             ...booking,
+   //             hotelId,          // Cập nhật hotelId
+   //             roomIds,          // Cập nhật roomIds
+   //             extraIds: selectedExtras,  // Cập nhật extraIds bằng selectedExtras
+   //             totalAmount,
+   //             status: "confirmed"       // Cập nhật tổng số tiền
+   //          };
+
+   //          // Gửi request với bookingTemp
+
+   //          const res = await axios.post(`${BASE_URL}/booking`, bookingTemp);
+   //          const result = res.data.data;
+
+
+   //          // console.log(result)
+   //          // Điều hướng sau khi tạo booking thành công
+   //          // navigate('/thank-you');
+   //          // navigate('/my-booking');
+   //          handlePayment(result);
+   //       } catch (error) {
+   //          alert(error.message);
+   //       }
+   //    }
+   // };
    const handleClick = async (e) => {
+      setReloadTrigger(prev => !prev);
       e.preventDefault();
 
       if (validateBeforeSubmit()) {
          try {
             if (!user) {
                return alert('Please sign in');
+            }
+
+            // Gọi API để kiểm tra số lượng phòng trống theo ngày check-in và check-out
+            const resAvailableRooms = await axios.get(`${BASE_URL}/booking/availability/${hotelId}/${booking.bookAt}/${booking.checkOut}`);
+            const availableRooms = resAvailableRooms.data.availableRooms;
+
+            // Chuyển đổi availableRooms thành một map để dễ dàng kiểm tra
+            const availableRoomMap = availableRooms.reduce((acc, room) => {
+               acc[room.roomId] = room.availableCount;
+               return acc;
+            }, {});
+
+            // Kiểm tra số lượng phòng chọn không vượt quá số lượng phòng còn lại
+            const isRoomQuantityValid = Object.entries(selectedRooms).every(([roomId, quantity]) => {
+               const availableQuantity = availableRoomMap[roomId] || 0;
+               return quantity <= availableQuantity;
+            });
+
+            if (!isRoomQuantityValid) {
+               return alert('The selected room quantity exceeds the available rooms for some types. Please adjust your selection.');
             }
 
             const totalAmount = calculateTotalAmount();
@@ -250,29 +317,25 @@ const Booking = ({ tour, avgRating }) => {
             // Tạo biến bookingTemp để lưu giá trị booking
             const bookingTemp = {
                ...booking,
-               hotelId,          // Cập nhật hotelId
-               roomIds,          // Cập nhật roomIds
-               extraIds: selectedExtras,  // Cập nhật extraIds bằng selectedExtras
+               hotelId,
+               roomIds,
+               extraIds: selectedExtras,
                totalAmount,
-               status: "confirmed"       // Cập nhật tổng số tiền
+               status: 'confirmed'
             };
 
             // Gửi request với bookingTemp
-
             const res = await axios.post(`${BASE_URL}/booking`, bookingTemp);
             const result = res.data.data;
 
-
-            // console.log(result)
-            // Điều hướng sau khi tạo booking thành công
-            // navigate('/thank-you');
-            // navigate('/my-booking');
             handlePayment(result);
          } catch (error) {
             alert(error.message);
          }
       }
    };
+
+
 
 
    const validateBeforeSubmit = () => {
@@ -435,7 +498,7 @@ const Booking = ({ tour, avgRating }) => {
                   ))}
                </FormGroup>
                <FormGroup>
-                  <h6>Tổng số tiền: ${calculateTotalAmount()}</h6>
+                  <h6>Total Amount: ${calculateTotalAmount()}</h6>
                </FormGroup>
                <Button type='submit' color='primary' className='btn primary__btn w-100 mt-4'>Book Now</Button>
             </Form>

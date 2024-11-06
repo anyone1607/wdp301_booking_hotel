@@ -42,11 +42,11 @@ const PaymentSuccessAdmin = () => {
           status: 'confirmed'
         });
 
-        if (booking.status === 'pending' || booking.status === 'processing') {
+        if (booking.status === 'pending' || booking.status === 'confirmed') {
           const updateBookingResponse = await axios.put(`${BASE_URL}/booking/${bookingId}`, {
             status: 'confirmed'
           });
-
+          console.log(booking.status);
           if (updateBookingResponse.data.success) {
             setMessage('Payment created successfully. Your booking is now confirmed.');
             await axios.post(`${BASE_URL}/email/send-confirmation`, booking);

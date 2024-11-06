@@ -35,7 +35,7 @@ const HotelCard = ({ searchQuery }) => {
   }
 
   const filteredLocations = locations.filter((location) =>
-    location.city.toLowerCase().includes(searchQuery.toLowerCase()) && location.status === "active"
+    location.city.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -60,6 +60,12 @@ const HotelCard = ({ searchQuery }) => {
 
             <div className="px-4 py-2">
               <div className="flex items-center mb-2">
+                <span className="bg-yellow-200 text-yellow-800 text-xs px-2 py-1 rounded-full mr-2">
+                  Giảm 12%
+                </span>
+                <span className="bg-yellow-200 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                  Voucher áp dụng toàn quốc
+                </span>
               </div>
               <p className="text-gray-600 text-sm mb-2">
                 {location.description ||
@@ -69,27 +75,31 @@ const HotelCard = ({ searchQuery }) => {
 
             <div className="flex items-center px-4 py-2 space-x-2">
               {location.images?.length > 0 ? (
-                location.images.slice(0, 3).map((image, index) => (
+                <>
                   <img
-                    key={index}
-                    src={image}
-                    alt={`Thumbnail ${index + 1}`}
+                    src={location.images[0]}
+                    alt="Thumbnail 1"
                     className="w-1/3 h-20 object-cover rounded-md"
                   />
-                ))
+                  <img
+                    src={location.images[1]}
+                    alt="Thumbnail 2"
+                    className="w-1/3 h-20 object-cover rounded-md"
+                  />
+                  <img
+                    src={location.images[2]}
+                    alt="Thumbnail 3"
+                    className="w-1/3 h-20 object-cover rounded-md"
+                  />
+                </>
               ) : (
-                <p className="text-gray-500 text-sm">No images available</p>
+                <p>No images available</p>
               )}
             </div>
 
             <div className="relative px-4 py-2 flex items-center justify-between">
               <div className="flex items-center text-xs text-gray-500">
-                <FaMapMarkerAlt className="text-yellow-600 mr-1" />
-                <span>
-                  {location.distance
-                    ? `${location.distance} km`
-                    : "Unknown distance"}
-                </span>
+
               </div>
               <Link
                 to={`/tours/city/${location.city}`}

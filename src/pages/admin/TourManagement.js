@@ -154,7 +154,7 @@ function TourManagement() {
             <th>Title</th>
             <th>Address</th>
             <th>Distance</th>
-            <th>Price</th>
+            {/* <th>Price</th> */}
             <th>Active</th>
             <th>Actions</th>
           </tr>
@@ -179,7 +179,7 @@ function TourManagement() {
                 <td onClick={() => handleShowModal(tour)}>{tour.title}</td>
                 <td onClick={() => handleShowModal(tour)}>{tour.address}</td>
                 <td onClick={() => handleShowModal(tour)}>{tour.distance} km</td>
-                <td onClick={() => handleShowModal(tour)}>${tour.price}</td>
+                {/* <td onClick={() => handleShowModal(tour)}>${tour.price}</td> */}
                 <td>
                   <Form.Check
                     type="switch"
@@ -238,15 +238,15 @@ function TourManagement() {
             <p>{selectedTour.desc ? selectedTour.desc : "No description available"}</p>
             <p><strong>Address:</strong> {selectedTour.address || "No address available"}</p>
             <p><strong>Distance:</strong> {selectedTour.distance ? `${selectedTour.distance} km` : "No distance available"}</p>
-            <p><strong>Max Group Size:</strong> {selectedTour.maxGroupSize || "N/A"}</p>
-            <p><strong>Price:</strong> ${selectedTour.price || "N/A"}</p>
+            {/* <p><strong>Max Group Size:</strong> {selectedTour.maxGroupSize || "N/A"}</p> */}
+            {/* <p><strong>Price:</strong> ${selectedTour.price || "N/A"}</p> */}
 
             {selectedTour.reviews && selectedTour.reviews.length > 0 ? (
               <div>
                 <strong>Reviews:</strong>
                 <ul>
                   {selectedTour.reviews.map((review) => (
-                    <li key={review._id}>{review.text}</li>
+                    <li key={review._id}>{review.username}: {review.reviewText}</li>
                   ))}
                 </ul>
               </div>

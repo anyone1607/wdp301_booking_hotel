@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import "../../styles/home.css";
-import { Container, Row, Col, CardSubtitle } from "reactstrap";
+import { Container, Row, Col, Form, FormGroup, Input } from "reactstrap";
 
 import heroVideo from "../../assets/images/hero-video.mp4";
 import heroVideo1 from "../../assets/images/hero-video1.mp4";
@@ -8,15 +8,30 @@ import heroVideo2 from "../../assets/images/hero-video2.mp4";
 
 import worldImg from "../../assets/images/world.png";
 import experienceImg from "../../assets/images/experience.png";
+import { FaMapMarkerAlt } from "react-icons/fa";
 
 import Subtitle from "../../shared/subtitle";
 import SearchBar from "../../shared/SearchBar";
-import ServiceList from "../../services/ServiceList";
+import useFetch from "../../hooks/useFetch";
+import { BASE_URL } from "../../utils/config";
 import FeaturedTourList from "../../components/Featured-tours/FeaturedTourList";
 import MasonryImagesGallery from "../../components/Image-gallery/MasonryImagesGallery";
 import Testimonials from "../../components/Testimonial/Testimonials";
+import ServiceList from "../../services/ServiceList";
 
 const Home = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const {
+    data: featuredTours,
+    loading,
+    error,
+  } = useFetch(`${BASE_URL}/tours/search/getFeaturedTour`);
+
+  // Filter tours based on search term
+  const filteredTours = featuredTours?.filter((tour) =>
+    tour.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <>
       {/* ========== HERO SECTION ========== */}
@@ -76,14 +91,81 @@ const Home = () => {
               </div>
             </Col>
 
-            <SearchBar />
+            <Col lg="12">
+              <div
+                className="search__bar"
+                style={{
+                  padding: "15px",
+                  backgroundColor: "#f9f9f9",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <Form className="d-flex align-items-center gap-4">
+                  <FormGroup
+                    className="d-flex gap-3 align-items-center form__group"
+                    style={{
+                      backgroundColor: "#fff",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: "5px",
+                      padding: "8px 12px",
+                      width: "100%",
+                    }}
+                  >
+                    <span
+                      className="icon-wrapper"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "#ffba00",
+                        color: "#fff",
+                        borderRadius: "50%",
+                        padding: "8px",
+                        fontSize: "1.2rem",
+                      }}
+                    >
+                      <FaMapMarkerAlt style={{ fontSize: "1.4rem" }} />
+                    </span>
+                    <div style={{ flexGrow: 1 }}>
+                      <h6
+                        style={{
+                          fontSize: "0.9rem",
+                          fontWeight: 600,
+                          color: "#333",
+                          marginBottom: "3px",
+                        }}
+                      >
+                        Hotel
+                      </h6>
+                      <Input
+                        type="text"
+                        placeholder="You can search for hotels!"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                          width: "100%",
+                          border: "none",
+                          borderBottom: "1px solid #ccc",
+                          outline: "none",
+                          padding: "6px 0",
+                          transition: "border-color 0.3s",
+                        }}
+                        onFocus={(e) => (e.target.style.borderColor = "#ffba00")}
+                        onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+                      />
+                    </div>
+                  </FormGroup>
+                </Form>
+              </div>
+            </Col>
           </Row>
         </Container>
       </section>
       {/* ============================================================== */}
 
       {/* ==================== HERO SECTION START ====================== */}
-      <section>
+      {/* <section>
         <Container>
           <Row>
             <Col lg="3">
@@ -93,23 +175,31 @@ const Home = () => {
             <ServiceList />
           </Row>
         </Container>
-      </section>
+      </section> */}
 
-      {/* ========== FEATURED TOUR SECTION START ========== */}
+      {/* FEATURED TOUR SECTION */}
       <section>
         <Container>
+
+
           <Row>
             <Col lg="12" className="mb-5">
               <Subtitle subtitle={"Explore"} />
               <h2 className="featured__tour-title">Our Featured Hotels</h2>
             </Col>
-            <FeaturedTourList />
+
+            {loading ? (
+              <h4>Loading.....</h4>
+            ) : error ? (
+              <h4>{error}</h4>
+            ) : (
+              <FeaturedTourList tours={filteredTours} />
+            )}
           </Row>
         </Container>
       </section>
-      {/* ========== FEATURED TOUR SECTION END =========== */}
 
-      {/* ========== EXPERIENCE SECTION START ============ */}
+      {/* EXPERIENCE SECTION */}
       <section>
         <Container>
           <Row>
@@ -124,7 +214,6 @@ const Home = () => {
                   you with exceptional service. Our team is committed to
                   ensuring your satisfaction, offering personalized solutions
                   tailored to your needs.
-                  <br />
                 </p>
               </div>
 
@@ -151,9 +240,8 @@ const Home = () => {
           </Row>
         </Container>
       </section>
-      {/* ========== EXPERIENCE SECTION END ============== */}
 
-      {/* ========== GALLERY SECTION START ============== */}
+      {/* GALLERY SECTION */}
       <section>
         <Container>
           <Row>
@@ -169,9 +257,8 @@ const Home = () => {
           </Row>
         </Container>
       </section>
-      {/* ========== GALLERY SECTION END ================ */}
 
-      {/* ========== TESTIMONIAL SECTION START ================ */}
+      {/* TESTIMONIAL SECTION */}
       <section>
         <Container>
           <Row>
@@ -185,7 +272,6 @@ const Home = () => {
           </Row>
         </Container>
       </section>
-      {/* ========== TESTIMONIAL SECTION END ================== */}
     </>
   );
 };

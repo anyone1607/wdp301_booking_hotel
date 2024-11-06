@@ -77,7 +77,8 @@ const Header = () => {
             {/* LOGO */}
             <div className="logo">
               <Link to="/home">
-                <img src={Logo} alt="Logo" />
+                <img src={Logo} alt="Logo" style={{ width: "150px", height: "80px", objectFit: "contain" }} />
+
               </Link>
             </div>
 

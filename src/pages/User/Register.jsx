@@ -16,9 +16,10 @@ const Register = () => {
       phone: '',
       email: '',
       password: '',
-      avatar: null, // Thay đổi từ string thành null để xử lý file
+      avatar: null,
    });
 
+   const [errors, setErrors] = useState({});
    const { dispatch } = useContext(AuthContext);
    const navigate = useNavigate();
 
@@ -31,16 +32,59 @@ const Register = () => {
       }
    };
 
+   const validateInput = () => {
+      const newErrors = {};
+      const { username, fullname, address, phone, email, password } = credentials;
+
+      if (!username) newErrors.username = 'Username is required';
+
+      if (!fullname) {
+         newErrors.fullname = 'Full name is required';
+      } else if (!/^[\p{L}\s]+$/u.test(fullname)) {
+         newErrors.fullname = 'Full name must contain only letters and spaces';
+      }
+
+      if (!address) newErrors.address = 'Address is required';
+
+      const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+      if (!phone) {
+         newErrors.phone = 'Phone number is required';
+      } else if (!phoneRegex.test(phone)) {
+         newErrors.phone = 'Invalid phone number format';
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email) {
+         newErrors.email = 'Email is required';
+      } else if (!emailRegex.test(email)) {
+         newErrors.email = 'Invalid email format';
+      }
+
+      const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+      if (!password) {
+         newErrors.password = 'Password is required';
+      } else if (!passwordRegex.test(password)) {
+         newErrors.password = 'Password must be at least 8 characters, include uppercase, number, and special character';
+      }
+
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+   };
+
+
    const handleClick = async (e) => {
+      e.preventDefault();
+
+      if (!validateInput()) return;
+
       Swal.fire({
          icon: 'success',
-         title: 'Đăng ký thành công',
+         title: 'Registration successful!',
          showConfirmButton: true,
-         confirmButtonText : 'OK',
+         confirmButtonText: 'OK',
          confirmButtonColor: '#3085d6',
-         timer: 1500
-         })
-      e.preventDefault();
+         timer: 1500,
+      });
 
       const formData = new FormData();
       for (const key in credentials) {
@@ -56,13 +100,19 @@ const Register = () => {
          const result = await res.json();
 
          if (!res.ok) {
-            alert(result.message);
+            Swal.fire({
+               icon: 'error',
+               title: result.message || 'Registration failed',
+            });
          } else {
             dispatch({ type: 'REGISTER_SUCCESS' });
             navigate('/login');
          }
       } catch (err) {
-         alert(err.message);
+         Swal.fire({
+            icon: 'error',
+            title: err.message || 'An error occurred',
+         });
       }
    };
 
@@ -91,6 +141,7 @@ const Register = () => {
                                  onChange={handleChange}
                                  required
                               />
+                              {errors.username && <p className="text-danger">{errors.username}</p>}
                            </FormGroup>
                            <FormGroup>
                               <input
@@ -99,6 +150,7 @@ const Register = () => {
                                  id="fullname"
                                  onChange={handleChange}
                               />
+                              {errors.fullname && <p className="text-danger">{errors.fullname}</p>}
                            </FormGroup>
                            <FormGroup>
                               <input
@@ -107,6 +159,7 @@ const Register = () => {
                                  id="address"
                                  onChange={handleChange}
                               />
+                              {errors.address && <p className="text-danger">{errors.address}</p>}
                            </FormGroup>
                            <FormGroup>
                               <input
@@ -115,6 +168,7 @@ const Register = () => {
                                  id="phone"
                                  onChange={handleChange}
                               />
+                              {errors.phone && <p className="text-danger">{errors.phone}</p>}
                            </FormGroup>
                            <FormGroup>
                               <input
@@ -124,6 +178,7 @@ const Register = () => {
                                  onChange={handleChange}
                                  required
                               />
+                              {errors.email && <p className="text-danger">{errors.email}</p>}
                            </FormGroup>
                            <FormGroup>
                               <input
@@ -133,8 +188,8 @@ const Register = () => {
                                  onChange={handleChange}
                                  required
                               />
+                              {errors.password && <p className="text-danger">{errors.password}</p>}
                            </FormGroup>
-
 
                            <Button className="btn secondary__btn auth__btn" type="submit">
                               Create Account

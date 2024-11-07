@@ -220,8 +220,9 @@ const TourList = () => {
 
       {/* Hotel Name Filter */}
       <div className="mb-4 text-center">
-        <label className="mr-2">Filter by Hotel Name:</label>
+
         <input
+          placeholder="Search Hotel by Name"
           type="text"
           value={hotelNameFilter}
           onChange={(e) => {
@@ -231,6 +232,7 @@ const TourList = () => {
           className="border rounded px-2 py-1"
         />
       </div>
+
 
       <div className="grid gap-6 md:grid-cols-3">
         {filteredHotels.length > 0 ? (

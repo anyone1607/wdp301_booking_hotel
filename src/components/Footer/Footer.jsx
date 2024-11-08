@@ -5,37 +5,16 @@ import { Link } from "react-router-dom";
 import logo from "../../assets/images/logo.png";
 
 const quick__links = [
-  {
-    path: "/home",
-    display: "Home",
-  },
-  {
-    path: "/about",
-    display: "About",
-  },
-  {
-    path: "/tours",
-    display: "Tours",
-  },
-  {
-    path: "/copyright",
-    display: "Copyright",
-  },
+  { path: "/home", display: "Home" },
+  { path: "/about", display: "About" },
+  { path: "/tours", display: "Tours" },
+  { path: "/copyright", display: "Copyright" },
 ];
 
 const quick__links2 = [
-  {
-    path: "/gallery",
-    display: "Gallery",
-  },
-  {
-    path: "/login",
-    display: "Login",
-  },
-  {
-    path: "/register",
-    display: "Register",
-  },
+  { path: "/gallery", display: "Gallery" },
+  { path: "/login", display: "Login" },
+  { path: "/register", display: "Register" },
 ];
 
 const Footer = () => {
@@ -93,24 +72,18 @@ const Footer = () => {
             <h5 className="footer__link-title">Contact</h5>
             <ListGroup className="footer__quick-links">
               <ListGroupItem className="ps-0 border-0 d-flex align-items-center gap-2">
-                <span>
-                  <i className="ri-map-pin-line"></i>
-                </span>
-                <p>Hoa Lac Hi-tech Park, Km29, Đại lộ Thăng Long, Hà Nội</p>
+                <span><i className="ri-map-pin-line"></i></span>
+                <p>Đại Học FPT - Hà Nội</p>
               </ListGroupItem>
 
               <ListGroupItem className="ps-0 border-0 d-flex align-items-center gap-2">
-                <span>
-                  <i className="ri-mail-line"></i>
-                </span>
-                <p className="mb-0">quanghieunguyen.business@fpt.edu.vn</p>
+                <span><i className="ri-mail-line"></i></span>
+                <p className="mb-0">Chungnkhe160935@fpt.edu.vn</p>
               </ListGroupItem>
 
               <ListGroupItem className="ps-0 border-0 d-flex align-items-center gap-2">
-                <span>
-                  <i className="ri-phone-fill"></i>
-                </span>
-                <p className="mb-0">0123456789</p>
+                <span><i className="ri-phone-fill"></i></span>
+                <p className="mb-0">+84 96.189.10 J Q K</p>
               </ListGroupItem>
             </ListGroup>
           </Col>

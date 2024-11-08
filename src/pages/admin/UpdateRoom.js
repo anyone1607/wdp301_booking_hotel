@@ -14,24 +14,21 @@ function UpdateRoom() {
         quantity: '',
         description: '',
         status: 'active',
-        photo: '' // Thêm trường photo vào trạng thái
+        photo: ''
     });
 
     const [hotels, setHotels] = useState([]);
     const [loading, setLoading] = useState(true);
     const fileInput = useRef(null);
-    const [message, setMessage] = useState(''); // Thêm state cho thông báo
-    const [errorMessage, setErrorMessage] = useState(''); // Thêm state cho thông báo lỗi
+    const [message, setMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const fetchRoomData = async () => {
             const token = localStorage.getItem("accessToken");
             try {
-                const url = `http://localhost:8000/api/v1/roomCategory/${id}`;
-                const response = await fetch(url, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                const response = await fetch(`http://localhost:8000/api/v1/roomCategory/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
                 });
                 const data = await response.json();
                 if (data) {
@@ -43,7 +40,7 @@ function UpdateRoom() {
                         quantity: data.quantity,
                         description: data.description,
                         status: data.status || 'active',
-                        photo: data.photo // Lưu URL của hình ảnh cũ
+                        photo: data.photo
                     });
                 }
             } catch (error) {
@@ -55,9 +52,7 @@ function UpdateRoom() {
             const token = localStorage.getItem("accessToken");
             try {
                 const response = await fetch("http://localhost:8000/api/v1/tours", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                    headers: { Authorization: `Bearer ${token}` },
                 });
                 const data = await response.json();
                 if (data.success && Array.isArray(data.data)) {
@@ -88,13 +83,11 @@ function UpdateRoom() {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Khi có file mới được chọn, cập nhật trạng thái photo thành file mới
             setFormData(prevState => ({
                 ...prevState,
-                photo: URL.createObjectURL(file) // Hiển thị ảnh mới
+                photo: URL.createObjectURL(file)
             }));
         } else {
-            // Nếu không có file nào được chọn, giữ lại ảnh cũ
             setFormData(prevState => ({
                 ...prevState,
                 photo: prevState.photo
@@ -105,21 +98,28 @@ function UpdateRoom() {
     const validateForm = () => {
         const { roomName, hotelId, roomPrice, maxOccupancy, quantity, description } = formData;
         if (!roomName || !hotelId || !roomPrice || !maxOccupancy || !quantity || !description) {
-            return "Vui lòng điền tất cả các trường.";
+            return "Please fill in all required fields.";
         }
-        return null; // Không có lỗi
+        if (roomPrice <= 0) return "Room price must be a positive number.";
+        if (maxOccupancy <= 0) return "Max occupancy must be a positive number.";
+        if (quantity <= 0) return "Quantity must be a positive number.";
+        
+        const file = fileInput.current?.files[0];
+        if (file && !file.type.startsWith('image/')) {
+            return "Invalid file type. Please select an image.";
+        }
+        return null;
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         const token = localStorage.getItem("accessToken");
 
-        // Kiểm tra xác thực dữ liệu trước khi gửi
         const validationError = validateForm();
         if (validationError) {
             setErrorMessage(validationError);
             setMessage('');
-            return; // Dừng lại nếu có lỗi
+            return;
         }
 
         const roomData = new FormData();
@@ -127,17 +127,13 @@ function UpdateRoom() {
             roomData.append(key, value);
         });
         if (fileInput.current.files[0]) {
-            roomData.append('file', fileInput.current.files[0]); // Gửi file hình ảnh
+            roomData.append('file', fileInput.current.files[0]);
         }
-
-        console.log("Submitting data:", Array.from(roomData.entries()));
 
         try {
             const response = await fetch(`http://localhost:8000/api/v1/roomCategory/${id}`, {
                 method: "PUT",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: { Authorization: `Bearer ${token}` },
                 body: roomData,
             });
 
@@ -149,12 +145,12 @@ function UpdateRoom() {
 
             const data = await response.json();
             if (data) {
-                setMessage('Cập nhật phòng thành công!'); // Thông báo thành công
-                setErrorMessage(''); // Xóa thông báo lỗi nếu có
+                setMessage('Room updated successfully!');
+                setErrorMessage('');
                 navigate('/room-management');
             } else {
-                setMessage('Không có gì thay đổi.'); // Thông báo không có gì thay đổi
-                setErrorMessage(''); // Xóa thông báo lỗi nếu có
+                setMessage('No changes were made.');
+                setErrorMessage('');
                 console.error("Failed to update room", formData);
             }
 
@@ -170,8 +166,8 @@ function UpdateRoom() {
     return (
         <div className="container mt-5">
             <h2 className="title text-center mb-4">Update Room</h2>
-            {message && <Alert variant="success">{message}</Alert>} {/* Hiển thị thông báo thành công */}
-            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>} {/* Hiển thị thông báo lỗi */}
+            {message && <Alert variant="success">{message}</Alert>}
+            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
             <Form onSubmit={handleSubmit}>
                 <Card className="p-4 shadow-sm">
                     <Row>
@@ -183,6 +179,7 @@ function UpdateRoom() {
                                     name="roomName"
                                     value={formData.roomName}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </Form.Group>
 
@@ -193,6 +190,7 @@ function UpdateRoom() {
                                     name="hotelId"
                                     value={formData.hotelId}
                                     onChange={handleInputChange}
+                                    required
                                 >
                                     <option value="">Select a hotel</option>
                                     {hotels.map((hotel) => (
@@ -210,6 +208,7 @@ function UpdateRoom() {
                                     name="roomPrice"
                                     value={formData.roomPrice}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </Form.Group>
 
@@ -220,6 +219,7 @@ function UpdateRoom() {
                                     name="maxOccupancy"
                                     value={formData.maxOccupancy}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </Form.Group>
 
@@ -230,6 +230,7 @@ function UpdateRoom() {
                                     name="quantity"
                                     value={formData.quantity}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </Form.Group>
 
@@ -240,6 +241,7 @@ function UpdateRoom() {
                                     name="status"
                                     value={formData.status}
                                     onChange={handleInputChange}
+                                    required
                                 >
                                     <option value="active">Active</option>
                                     <option value="inactive">Inactive</option>
@@ -252,17 +254,16 @@ function UpdateRoom() {
                                     type="file"
                                     name="file"
                                     ref={fileInput}
-                                    onChange={handleFileChange} // Sử dụng handleFileChange để xử lý ảnh
+                                    onChange={handleFileChange}
                                 />
                             </Form.Group>
                         </Col>
 
                         <Col md={6} className="d-flex justify-content-center align-items-center">
-                            {/* Hiển thị hình ảnh cũ nếu có */}
                             {formData.photo && (
                                 <img
                                     src={formData.photo}
-                                    alt="Old Room"
+                                    alt="Room Preview"
                                     style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'cover', marginBottom: '20px' }}
                                 />
                             )}
@@ -277,6 +278,7 @@ function UpdateRoom() {
                             name="description"
                             value={formData.description}
                             onChange={handleInputChange}
+                            required
                         />
                     </Form.Group>
 

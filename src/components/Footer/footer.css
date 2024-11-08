@@ -1,53 +1,112 @@
+/* Đặt chiều cao cho toàn bộ trang */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content-wrap {
+  flex: 1;
+}
+
+/* Định dạng cho footer */
 .footer {
-   padding-top   : 30px;
-   padding-bottom: 30px;
+   background-color: #1a1a1a;
+   color: #d1d1d1;
+   padding: 30px;
+    margin-top: 50px;
+   font-family: Arial, sans-serif;
+   font-size: 0.85rem;
+   width: 100%;
 }
 
-.footer .logo img {
-   width        : 60%;
-   margin-bottom: 1rem;
-}
-
-.footer .logo p {
-   color    : var(--text-color);
-   font-size: 1rem;
-}
-
-.social__link span a {
-   text-decoration: none;
-   color          : var(--heading-color);
-   font-size      : 1.5rem;
+.footer__slogan {
+   color: #aaaaaa;
+   font-size: 0.8rem;
+   margin-top: 8px;
+   font-style: italic;
 }
 
 .footer__link-title {
-   color        : var(--heading-color);
-   margin-bottom: 1rem;
+   font-size: 1rem;
+   color: #ffffff;
+   margin-bottom: 10px;
+   font-weight: 600;
+   text-transform: uppercase;
 }
 
-.footer__quick-links li a {
+.footer__quick-links .list-group-item {
+   background: none;
+   padding-left: 0;
+}
+
+.footer__quick-links .list-group-item a {
+   color: #d1d1d1;
+   font-size: 0.85rem;
    text-decoration: none;
-   color          : var(--text-color);
-   font-size      : 1.2rem;
+   transition: color 0.3s;
 }
 
-.footer__quick-links a:hover {
-   color: var(--secondary-color);
+.footer__quick-links .list-group-item a:hover {
+   color: #ffba00;
 }
 
-.footer__quick-links h6 span i {
-   color    : var(--secondary-color);
-   font-size: 1.4rem;
+.social__link {
+   margin-top: 10px;
 }
 
-.footer__quick-links h6 {
-   margin-bottom: 1rem;
-}
-
-.footer__quick-links p {
+.social__link a {
+   color: #d1d1d1;
    font-size: 1.2rem;
+   transition: color 0.3s;
 }
 
-.copyright {
-   color    : var(--text-color);
-   font-size: 1.2rem;
+.social__link a:hover {
+   color: #ffba00;
+}
+
+.footer__bottom {
+   padding: 15px 0;
+   border-top: 1px solid #333;
+   color: #aaaaaa;
+   font-size: 0.8rem;
+   text-align: center;
+}
+
+.footer__bottom p {
+   margin: 0;
+}
+
+.footer .ri-youtube-line,
+.footer .ri-github-fill,
+.footer .ri-facebook-circle-line,
+.footer .ri-instagram-line,
+.footer .ri-map-pin-line,
+.footer .ri-mail-line,
+.footer .ri-phone-fill {
+   font-size: 1rem;
+   color: #ffba00;
+   margin-right: 6px;
+}
+
+.footer__quick-links .list-group-item {
+   display: flex;
+   align-items: center;
+   color: #d1d1d1;
+}
+
+.footer__quick-links .list-group-item p {
+   margin: 0;
+   font-size: 0.85rem;
+   color: #d1d1d1;
+}
+
+.footer__quick-links .list-group-item i {
+   font-size: 1rem;
+   color: #ffba00;
 }

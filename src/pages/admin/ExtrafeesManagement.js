@@ -24,7 +24,11 @@ function ExtrafeesManagement() {
           },
         });
         const data = await response.json();
-        setExtrafees(data);
+        // Sort data to show the latest items at the top
+        const sortedData = data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setExtrafees(sortedData);
       } catch (error) {
         console.error("Error fetching extra fees:", error);
       }
@@ -63,7 +67,7 @@ function ExtrafeesManagement() {
   };
 
   const filteredExtrafees = extrafees.filter((extrafee) =>
-    extrafee.extraName.toLowerCase().includes(searchQuery.toLowerCase())
+    extrafee.hotelId?.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Get current extra fees
@@ -87,7 +91,7 @@ function ExtrafeesManagement() {
 
       <Form.Control
         type="text"
-        placeholder="Search by extra fee name"
+        placeholder="Search extra fee by hotel name"
         value={searchQuery}
         onChange={handleSearchChange}
         className="mb-3"
@@ -98,9 +102,8 @@ function ExtrafeesManagement() {
             <th>Hotel</th>
             <th>Extra Fee Name</th>
             <th>Price</th>
-            <th>Status</th>
+            {/* <th>Status</th> */}
             <th>Actions</th>
-            {/* <th>Delete</th> */}
           </tr>
         </thead>
         <tbody>
@@ -118,20 +121,12 @@ function ExtrafeesManagement() {
                 <td onClick={() => handleShowModal(extrafee)}>
                   ${extrafee.extraPrice}
                 </td>
-                <td>{extrafee.status}</td>
+                {/* <td>{extrafee.status}</td> */}
                 <td>
                   <Link to={`/update-extrafee/${extrafee._id}`}>
                     <Button variant="warning">Update</Button>
                   </Link>
                 </td>
-                {/* <td>
-                  <Button
-                    variant="danger"
-                    onClick={() => handleDeleteExtrafee(extrafee._id)}
-                  >
-                    Delete
-                  </Button>
-                </td> */}
               </tr>
             ))
           ) : (

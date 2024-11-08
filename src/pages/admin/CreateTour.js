@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Button, Row, Col, Card } from 'react-bootstrap';
+import { Form, Button, Row, Col, Card, Alert } from 'react-bootstrap';
 import '../../styles/tourStyle.css';
 
 function CreateTour() {
@@ -12,24 +12,22 @@ function CreateTour() {
         desc: '',
         price: ''
     });
-
     const [locations, setLocations] = useState([]);
-    const fileInput = useRef(null); // Thêm ref để truy cập input file
+    const [error, setError] = useState("");
+    const fileInput = useRef(null);
     const navigate = useNavigate();
 
-    // Fetch locations khi component mount
+    // Fetch locations when component mounts
     useEffect(() => {
         const fetchLocations = async () => {
             const token = localStorage.getItem("accessToken");
             try {
-                const response = await fetch("http://localhost:8000/api/v1/locations/getlocation", {
+                const response = await fetch("http://localhost:8000/api/v1/locations/", {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
                 const data = await response.json();
-                console.log(data); // Kiểm tra dữ liệu trả về từ API
-
                 if (Array.isArray(data)) {
                     setLocations(data);
                 } else {
@@ -39,16 +37,29 @@ function CreateTour() {
                 console.error("Error fetching locations:", error);
             }
         };
-
         fetchLocations();
     }, []);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const token = localStorage.getItem("accessToken");
-        console.log("Submitting formData:", formData);
+        setError("");
 
-        // Tạo FormData để gửi dữ liệu
+        // Validation
+        if (!formData.title || !formData.location || !formData.address || !formData.distance || !formData.desc) {
+            setError("All fields are required.");
+            return;
+        }
+        if (isNaN(formData.distance) || formData.distance <= 0) {
+            setError("Distance must be a positive number.");
+            return;
+        }
+        
+        if (!fileInput.current.files[0]) {
+            setError("Photo is required.");
+            return;
+        }
+
+        const token = localStorage.getItem("accessToken");
         const formDataToSend = new FormData();
         formDataToSend.append("title", formData.title);
         formDataToSend.append("location", formData.location);
@@ -56,7 +67,7 @@ function CreateTour() {
         formDataToSend.append("distance", formData.distance);
         formDataToSend.append("desc", formData.desc);
         formDataToSend.append("price", formData.price);
-        formDataToSend.append("file", fileInput.current.files[0]); // Lấy file từ input
+        formDataToSend.append("file", fileInput.current.files[0]);
 
         try {
             const response = await fetch("http://localhost:8000/api/v1/tours", {
@@ -64,18 +75,17 @@ function CreateTour() {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
-                body: formDataToSend, // Gửi FormData
+                body: formDataToSend,
             });
-
             const result = await response.json();
-
             if (result.success && result.data) {
                 navigate('/hotel-management');
             } else {
-                console.error("Failed to create hotel", result);
+                setError("Failed to create hotel");
             }
         } catch (error) {
             console.error("Error creating tour:", error);
+            setError("An error occurred while creating the tour.");
         }
     };
 
@@ -87,6 +97,7 @@ function CreateTour() {
     return (
         <div className="container mt-5">
             <h2 className="title text-center mb-4">Create Hotel</h2>
+            {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleSubmit}>
                 <Card className="p-4 shadow-sm">
                     <Row>
@@ -105,9 +116,9 @@ function CreateTour() {
                             <Form.Group className="mb-3" controlId="formPhoto">
                                 <Form.Label>Photo</Form.Label>
                                 <Form.Control
-                                    type="file" // Thay đổi thành input type file
+                                    type="file"
                                     name="file"
-                                    ref={fileInput} // Sử dụng ref để lấy file
+                                    ref={fileInput}
                                     required
                                 />
                             </Form.Group>
@@ -124,7 +135,7 @@ function CreateTour() {
                             </Form.Group>
 
                             <Form.Group className="mb-3" controlId="formCity">
-                                <Form.Label>City</Form.Label>
+                                <Form.Label>Location</Form.Label>
                                 <Form.Control
                                     as="select"
                                     name="location"
@@ -132,10 +143,10 @@ function CreateTour() {
                                     onChange={handleInputChange}
                                     required
                                 >
-                                    <option value="">Select a city</option>
+                                    <option value="">Select a Location</option>
                                     {locations.map((location) => (
                                         <option key={location._id} value={location._id}>
-                                            {location.city}
+                                            {location.title}
                                         </option>
                                     ))}
                                 </Form.Control>
@@ -151,7 +162,7 @@ function CreateTour() {
                                     required
                                 />
                             </Form.Group>
-                            {/* 
+{/* 
                             <Form.Group className="mb-3" controlId="formPrice">
                                 <Form.Label>Price ($)</Form.Label>
                                 <Form.Control
@@ -164,7 +175,6 @@ function CreateTour() {
                             </Form.Group> */}
                         </Col>
                         <Col md={6} className="d-flex justify-content-center align-items-center">
-                            {/* Hiển thị hình ảnh nếu có */}
                             {fileInput.current && fileInput.current.files[0] && (
                                 <img
                                     src={URL.createObjectURL(fileInput.current.files[0])}

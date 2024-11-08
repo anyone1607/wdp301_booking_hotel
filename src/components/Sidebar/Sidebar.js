@@ -175,18 +175,7 @@ function SideBar() {
             </li>
           )}
 
-          {/* Log out */}
-          <li className={`${pathname === "/login" ? "active" : ""}`}>
-            <Link
-              className={`nav-link ${pathname === "/login" ? "active" : ""}`}
-              onClick={handleLogout} // Gọi handleLogout khi nhấn vào
-              style={{ display: "flex", alignItems: "flex-end" }}
-            >
-              <CiLogout style={{ fontSize: "24px" }} />
-              &ensp;
-              <p style={{ fontSize: "14px" }}>Log out</p>
-            </Link>
-          </li>
+        
         </ul>
       </div>
     </div>

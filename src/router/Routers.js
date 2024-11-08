@@ -26,7 +26,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import { AuthContext } from "../context/AuthContext";
 import AdminLayout from "../components/Layout/AdminLayout";
 import Header from "../components/Header/Header";
-// import Footer from "../components/Footer/Footer";
+import Footer from "../components/Footer/Footer";
 import ErrorPage from "../pages/ErrorPage"; // Nhập trang ErrorPage
 import Location from "../pages/User/Location"; // import Location
 import LocationManagement from "../pages/admin/LocationManagement";
@@ -40,6 +40,8 @@ import UpdateExtrafees from "../pages/admin/UpdateExtrafees";
 import PaymentSuccessAdmin from "../pages/admin/SuccessAdmin";
 import PaymentCancelAdmin from "../pages/admin/CancelAdmin";
 import ContactManagement from "../pages/admin/ContactMangement";
+import CreateLocation from "../pages/admin/CreateLocation";
+import UpdateLocation from "../pages/admin/UpdateLocation";
 
 const Routers = () => {
   const { user } = useContext(AuthContext);
@@ -57,6 +59,8 @@ const Routers = () => {
     location.pathname.startsWith("/booking-management") ||
     location.pathname.startsWith("/create-tour") ||
     location.pathname.startsWith("/update-tour") ||
+    location.pathname.startsWith("/create-location") ||
+    location.pathname.startsWith("/update-location") ||
     location.pathname.startsWith("/create-room") ||
     location.pathname.startsWith("/update-room") ||
     location.pathname.startsWith("/contact-management") ||
@@ -142,11 +146,29 @@ const Routers = () => {
               />
             }
           />
+           <Route
+            path="/create-location"
+            element={
+              <ProtectedRoute
+                element={<CreateLocation />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />
           <Route
             path="/update-tour/:id"
             element={
               <ProtectedRoute
                 element={<UpdateTour />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />
+          <Route
+            path="/update-location/:id"
+            element={
+              <ProtectedRoute
+                element={<UpdateLocation />}
                 allowedRoles={["admin"]}
               />
             }
@@ -247,7 +269,7 @@ const Routers = () => {
         <Route path="/error" element={<ErrorPage />} />
         <Route path="*" element={<Navigate to="/error" />} />
       </Routes>
-      {/* {!hideHeaderFooter && <Footer />} */}
+      {!hideHeaderFooter && <Footer />}
     </>
   );
 };

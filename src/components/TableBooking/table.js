@@ -27,11 +27,18 @@ function TableBooking({ data }) {
       const paymentStatus = {};
       for (const booking of data) {
         try {
-          const response = await axios.get(`${BASE_URL}/payment/${booking._id}`);
-          paymentStatus[booking._id] = response.data.data ? response.data.data.status : 'No payment'; // Nếu không có payment, set 'No payment'
+          const response = await axios.get(
+            `${BASE_URL}/payment/${booking._id}`
+          );
+          paymentStatus[booking._id] = response.data.data
+            ? response.data.data.status
+            : "No payment"; // Nếu không có payment, set 'No payment'
         } catch (error) {
-          console.error(`Error fetching payment for booking ${booking._id}:`, error);
-          paymentStatus[booking._id] = 'Error fetching payment'; // Thông báo lỗi nếu không lấy được payment
+          console.error(
+            `Error fetching payment for booking ${booking._id}:`,
+            error
+          );
+          paymentStatus[booking._id] = "Error fetching payment"; // Thông báo lỗi nếu không lấy được payment
         }
       }
       setPayments(paymentStatus); // Cập nhật trạng thái thanh toán
@@ -41,10 +48,17 @@ function TableBooking({ data }) {
   }, [data]);
 
   const handleToggleStatus = async (id, currentStatus) => {
-    let newStatus = currentStatus === "pending" ? "confirmed" : currentStatus === "confirmed" ? "cancelled" : "pending";
+    let newStatus =
+      currentStatus === "pending"
+        ? "confirmed"
+        : currentStatus === "confirmed"
+        ? "cancelled"
+        : "pending";
 
     try {
-      const response = await axios.put(`${BASE_URL}/booking/${id}`, { status: newStatus });
+      const response = await axios.put(`${BASE_URL}/booking/${id}`, {
+        status: newStatus,
+      });
       if (response.data.success) {
         setFilteredData((prevData) =>
           prevData.map((booking) =>
@@ -63,7 +77,7 @@ function TableBooking({ data }) {
     const text = e.target.value;
     setFilterText(text);
     const filtered = data.filter((booking) =>
-      booking._id.toLowerCase().includes(text.toLowerCase())
+      booking.name.toLowerCase().includes(text.toLowerCase())
     );
     setFilteredData(filtered);
   };
@@ -88,7 +102,9 @@ function TableBooking({ data }) {
 
   const handleRefundDetails = async (bookingId) => {
     try {
-      const response = await axios.get(`${BASE_URL}/refund/bookingId/${bookingId}`);
+      const response = await axios.get(
+        `${BASE_URL}/refund/bookingId/${bookingId}`
+      );
       if (response.data.length === 0) {
         toast.info("Booking has no refund.");
       } else {
@@ -106,11 +122,15 @@ function TableBooking({ data }) {
     const bookingId = refundDetails.paymentId.bookingId; // Giả sử `paymentId` chứa thông tin về bookingId
 
     try {
-      const response = await axios.put(`${BASE_URL}/booking/${bookingId}`, { status: "cancelled" });
+      const response = await axios.put(`${BASE_URL}/booking/${bookingId}`, {
+        status: "cancelled",
+      });
       if (response.data.success) {
         setFilteredData((prevData) =>
           prevData.map((booking) =>
-            booking._id === bookingId ? { ...booking, status: "cancelled" } : booking
+            booking._id === bookingId
+              ? { ...booking, status: "cancelled" }
+              : booking
           )
         );
         toast.success("Booking status updated to cancelled"); // Thêm thông báo thành công
@@ -123,9 +143,6 @@ function TableBooking({ data }) {
       toast.error("An error occurred while updating the booking status");
     }
   };
-
-
-
 
   const handlePaymentSuccess = () => {
     toast.success("Thành công, vui lòng chờ quản lý duyệt booking của bạn.");
@@ -145,7 +162,7 @@ function TableBooking({ data }) {
       <div className="card-body">
         <InputGroup className="mb-3">
           <FormControl
-            placeholder="Filter by Booking ID"
+            placeholder="Search Booking by Name Customer"
             value={filterText}
             onChange={handleFilterChange}
           />
@@ -164,32 +181,59 @@ function TableBooking({ data }) {
                 <th>Price</th>
                 <th>Payment Status</th> {/* Thêm cột trạng thái thanh toán */}
                 <th>Refund</th>
-                <th>Actions</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {currentBookings.map((booking) => (
-                <tr key={booking._id} onClick={() => handleShowDetails(booking)} style={{ cursor: "pointer" }}>
+                <tr
+                  key={booking._id}
+                  onClick={() => handleShowDetails(booking)}
+                  style={{ cursor: "pointer" }}
+                >
                   <td>{booking._id}</td>
                   <td>{booking.hotelId.title}</td>
-                  <td>{Array.isArray(booking.roomIds) ? booking.roomIds.length : 0}</td>
+                  <td>
+                    {Array.isArray(booking.roomIds)
+                      ? booking.roomIds.length
+                      : 0}
+                  </td>
                   <td>{booking.name}</td>
                   <td>{booking.adult + booking.children + booking.baby}</td>
                   <td>0{booking.phone}</td>
-                  <td>{new Date(booking.bookAt).toLocaleString("VN", { year: "numeric", month: "2-digit", day: "2-digit" })}</td>
+                  <td>
+                    {new Date(booking.bookAt).toLocaleString("VN", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    })}
+                  </td>
                   <td>{booking.totalAmount}</td>
                   <td
-
                     style={{
-                      backgroundColor: payments[booking._id] === "confirmed" ? "blue" : "transparent",
-                      color: payments[booking._id] === "confirmed" ? "white" : "black",
+                      backgroundColor:
+                        payments[booking._id] === "confirmed"
+                          ? "blue"
+                          : "transparent",
+                      color:
+                        payments[booking._id] === "confirmed"
+                          ? "white"
+                          : "black",
                     }}
                   >
                     {payments[booking._id] || "Loading..."}
-                  </td> {/* Hiển thị trạng thái thanh toán */}
+                  </td>{" "}
+                  {/* Hiển thị trạng thái thanh toán */}
                   <td>
-                    {payments[booking._id] === "confirmed" && booking.status === "pending" ? (
-                      <Button variant="info" onClick={(e) => { e.stopPropagation(); handleRefundDetails(booking._id); }}>
+                    {payments[booking._id] === "confirmed" &&
+                    booking.status === "pending" ? (
+                      <Button
+                        variant="info"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRefundDetails(booking._id);
+                        }}
+                      >
                         View Refund
                       </Button>
                     ) : (
@@ -199,8 +243,17 @@ function TableBooking({ data }) {
                   <td>
                     <div className="three-way-toggle">
                       <div
-                        className={`toggle-switch ${booking.status === "cancelled" ? "left" : booking.status === "confirmed" ? "right" : "middle"}`}
-                        onClick={(e) => { e.stopPropagation(); handleToggleStatus(booking._id, booking.status); }}
+                        className={`toggle-switch ${
+                          booking.status === "cancelled"
+                            ? "left"
+                            : booking.status === "confirmed"
+                            ? "right"
+                            : "middle"
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleStatus(booking._id, booking.status);
+                        }}
                       >
                         <span className="toggle-label">Cancelled</span>
                         <span className="toggle-label">Pending</span>
@@ -236,39 +289,87 @@ function TableBooking({ data }) {
         <Modal.Body>
           {selectedBooking && (
             <div>
-              <p><strong>ID:</strong> {selectedBooking._id}</p>
-              <p><strong>Hotel Name:</strong> {selectedBooking.hotelId.title}</p>
-              <p><strong>Full Name:</strong> {selectedBooking.name}</p>
-              <p><strong>Email:</strong> {selectedBooking.email}</p>
-              <p><strong>Group Size:</strong> {selectedBooking.adult}-adult || {selectedBooking.children}-children || {selectedBooking.baby}-baby</p>
-              <p><strong>Phone:</strong> 0{selectedBooking.phone}</p>
+              <p>
+                <strong>ID:</strong> {selectedBooking._id}
+              </p>
+              <p>
+                <strong>Hotel Name:</strong> {selectedBooking.hotelId.title}
+              </p>
+              <p>
+                <strong>Full Name:</strong> {selectedBooking.name}
+              </p>
+              <p>
+                <strong>Email:</strong> {selectedBooking.email}
+              </p>
+              <p>
+                <strong>Group Size:</strong> {selectedBooking.adult}-adult ||{" "}
+                {selectedBooking.children}-children || {selectedBooking.baby}
+                -baby
+              </p>
+              <p>
+                <strong>Phone:</strong> 0{selectedBooking.phone}
+              </p>
               <p>
                 <strong>Room:</strong>
-                {Object.entries(selectedBooking.roomIds.reduce((acc, room) => { acc[room.roomName] = (acc[room.roomName] || 0) + 1; return acc; }, {}))
-                  .map(([roomName, count], index) => (<span key={index}>{" "}{roomName} (x{count}){index < Object.entries(selectedBooking.roomIds).length - 1 ? ", " : ""}</span>))}
+                {Object.entries(
+                  selectedBooking.roomIds.reduce((acc, room) => {
+                    acc[room.roomName] = (acc[room.roomName] || 0) + 1;
+                    return acc;
+                  }, {})
+                ).map(([roomName, count], index) => (
+                  <span key={index}>
+                    {" "}
+                    {roomName} (x{count})
+                    {index < Object.entries(selectedBooking.roomIds).length - 1
+                      ? ", "
+                      : ""}
+                  </span>
+                ))}
               </p>
               <p>
                 <strong>Extra Fees:</strong>
-                {selectedBooking.extraIds.length > 0 ? (
-                  selectedBooking.extraIds.map((extra, index) => (
-                    <span key={index}>
-                      {" "}
-                      {extra.extraName}
-                      {index < selectedBooking.extraIds.length - 1 ? ", " : ""}
-                    </span>
-                  ))
-                ) : (
-                  " None"
-                )}
+                {selectedBooking.extraIds.length > 0
+                  ? selectedBooking.extraIds.map((extra, index) => (
+                      <span key={index}>
+                        {" "}
+                        {extra.extraName}
+                        {index < selectedBooking.extraIds.length - 1
+                          ? ", "
+                          : ""}
+                      </span>
+                    ))
+                  : " None"}
               </p>
-              <p><strong>Total Price:</strong> {selectedBooking.totalAmount}</p>
-              <p><strong>Booking Date:</strong> {new Date(selectedBooking.bookAt).toLocaleString("VN", { year: "numeric", month: "2-digit", day: "2-digit" })}</p>
-              <p><strong>Booking CheckOut:</strong> {new Date(selectedBooking.checkOut).toLocaleString("VN", { year: "numeric", month: "2-digit", day: "2-digit" })}</p>
+              <p>
+                <strong>Total Price:</strong> {selectedBooking.totalAmount}
+              </p>
+              <p>
+                <strong>Booking Date:</strong>{" "}
+                {new Date(selectedBooking.bookAt).toLocaleString("VN", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                })}
+              </p>
+              <p>
+                <strong>Booking CheckOut:</strong>{" "}
+                {new Date(selectedBooking.checkOut).toLocaleString("VN", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                })}
+              </p>
               {hotel && (
                 <>
-                  <p><strong>Hotel Name:</strong> {hotel.title}</p>
-                  <p><strong>Hotel Address:</strong> {hotel.address}</p>
-                  <p><strong>Hotel Price:</strong> {hotel.cheapestPrice}</p>
+                  <p>
+                    <strong>Hotel Name:</strong> {hotel.title}
+                  </p>
+                  <p>
+                    <strong>Hotel Address:</strong> {hotel.address}
+                  </p>
+                  <p>
+                    <strong>Hotel Price:</strong> {hotel.cheapestPrice}
+                  </p>
                 </>
               )}
             </div>
@@ -276,7 +377,9 @@ function TableBooking({ data }) {
         </Modal.Body>
         <Modal.Footer>
           {/* <button className="btn btn-primary" onClick={handlePaymentSuccess}>Thanh toán</button> */}
-          <button className="btn btn-secondary" onClick={handleCloseModal}>Close</button>
+          <button className="btn btn-secondary" onClick={handleCloseModal}>
+            Close
+          </button>
         </Modal.Footer>
       </Modal>
       {/* Modal Refund Details */}
@@ -287,21 +390,43 @@ function TableBooking({ data }) {
         <Modal.Body>
           {refundDetails ? (
             <div>
-              <p><strong>Refund Amount:</strong> {refundDetails.paymentId.amount} VND</p>
-              <p><strong>Banking:</strong> {refundDetails.bankName}</p>
-              <p><strong>STK:</strong> {refundDetails.bankNumber}</p>
-              <p><strong>CTK:</strong> {refundDetails.name}</p>
-              <p><strong>Reason:</strong> {refundDetails.reasons}</p>
-              <p><strong>Refund Date:</strong> {new Date(refundDetails.createdAt).toLocaleString("VN", { year: "numeric", month: "2-digit", day: "2-digit" })}</p>
+              <p>
+                <strong>Refund Amount:</strong> {refundDetails.paymentId.amount}{" "}
+                VND
+              </p>
+              <p>
+                <strong>Banking:</strong> {refundDetails.bankName}
+              </p>
+              <p>
+                <strong>STK:</strong> {refundDetails.bankNumber}
+              </p>
+              <p>
+                <strong>CTK:</strong> {refundDetails.name}
+              </p>
+              <p>
+                <strong>Reason:</strong> {refundDetails.reasons}
+              </p>
+              <p>
+                <strong>Refund Date:</strong>{" "}
+                {new Date(refundDetails.createdAt).toLocaleString("VN", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                })}
+              </p>
               {/* Nút Accept */}
-              <Button variant="success" onClick={handleAcceptRefund}>Accept</Button>
+              <Button variant="success" onClick={handleAcceptRefund}>
+                Accept
+              </Button>
             </div>
           ) : (
             <p>Loading...</p>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowRefundModal(false)}>Close</Button>
+          <Button variant="secondary" onClick={() => setShowRefundModal(false)}>
+            Close
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>

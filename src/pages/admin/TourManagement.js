@@ -18,7 +18,6 @@ function TourManagement() {
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
 
-    // Fetch tours
     fetch("http://localhost:8000/api/v1/tours", {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -26,7 +25,11 @@ function TourManagement() {
     })
       .then((response) => response.json())
       .then((data) => {
-        setTours(data.data);
+        // Sort tours by `createdAt` or `updatedAt` in descending order
+        const sortedTours = data.data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setTours(sortedTours);
       })
       .catch((error) => {
         console.error(error);
@@ -129,7 +132,7 @@ function TourManagement() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   if (tours.length === 0) {
-    return <h2>No tours</h2>;
+    return <h2>No Hotel</h2>;
   }
 
   return (
@@ -172,7 +175,7 @@ function TourManagement() {
                 </td>
                 <td onClick={() => handleShowModal(tour)}>
                   {tour.location && Array.isArray(tour.location) && tour.location.length > 0
-                    ? tour.location.map((loc) => loc.city).join(", ")
+                    ? tour.location.map((loc) => loc.title).join(", ")
                     : "No Location"}
                 </td>
 

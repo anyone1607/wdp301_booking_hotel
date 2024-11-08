@@ -31,22 +31,7 @@ const TourCard = ({ tour }) => {
                      borderTopRightRadius: "8px"
                   }}
                />
-               {featured && (
-                  <span style={{
-                     position: "absolute",
-                     top: "8px",
-                     left: "8px",
-                     backgroundColor: "#ff7f50",
-                     color: "#fff",
-                     padding: "4px 8px",
-                     borderRadius: "3px",
-                     fontSize: "0.75rem",
-                     fontWeight: "bold",
-                  }}
-                  >
-                     Featured
-                  </span>
-               )}
+               {featured}
             </div>
 
             <CardBody style={{ padding: "15px" }}>

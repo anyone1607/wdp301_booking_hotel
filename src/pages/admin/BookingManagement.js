@@ -36,16 +36,21 @@ function BookingManagement() {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                setBookings(response.data.data);
+    
+                // Sort bookings by createdAt in descending order
+                const sortedBookings = response.data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+                setBookings(sortedBookings);
                 setLoading(false);
             } catch (error) {
                 console.error("Error fetching bookings:", error);
                 setLoading(false);
             }
         };
-
+    
         fetchData();
     }, []);
+    
 
     // Fetch hotels/tours
     useEffect(() => {

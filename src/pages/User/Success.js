@@ -26,8 +26,6 @@ const PaymentSuccess = () => {
     const createPayment = async () => {
       if (!booking) return;
 
-      console.log("Current booking status before payment:", booking.status); // Log trạng thái hiện tại
-
       try {
         const paymentResponse = await axios.get(`${BASE_URL}/payment/${bookingId}`);
 
@@ -59,7 +57,6 @@ const PaymentSuccess = () => {
 
       } catch (error) {
         console.error("Error creating payment:", error.message);
-        console.error("API error:", error.response ? error.response.data : error.message);
         setMessage('An error occurred while creating payment');
       }
     };
@@ -67,8 +64,26 @@ const PaymentSuccess = () => {
     createPayment();
   }, [booking]);
 
+  const messageStyle = {
+    fontSize: '1.2rem',
+    textAlign: 'center',
+    padding: '120px',
+    margin: '20px auto',
+    borderRadius: '8px',
+    maxWidth: '500px',
+    color: (message === 'Payment created successfully. Your booking is now confirmed.' || message.includes('confirmed'))
+      ? '#2d8a34'
+      : '#b43a3a',
+    backgroundColor: (message === 'Payment created successfully. Your booking is now confirmed.' || message.includes('confirmed'))
+      ? '#e6ffed'
+      : '#ffe6e6',
+    border: (message === 'Payment created successfully. Your booking is now confirmed.' || message.includes('confirmed'))
+      ? '1px solid #c2e4c8'
+      : '1px solid #f5bcbc',
+  };
+  
   return (
-    <div>
+    <div style={messageStyle}>
       <h1>{message}</h1>
     </div>
   );
